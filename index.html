@@ -1,0 +1,2048 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kuis Interaktif PAI & Budi Pekerti - SLB Fase C</title>
+  <!-- Menggunakan Tailwind CSS untuk tata letak responsif dan ramah anak -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Nunito & Fredoka untuk tampilan ramah anak yang bulat, besar, dan sangat mudah dibaca -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(135deg, #E0F7FA 0%, #FFF9C4 50%, #FCE4EC 100%);
+      min-height: 100vh;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    h1, h2, h3, .font-display {
+      font-family: 'Fredoka', sans-serif;
+    }
+    /* Efek tombol 3D ceria yang mudah disentuh */
+    .btn-3d {
+      transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 6px 0 rgba(0, 0, 0, 0.18);
+    }
+    .btn-3d:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18);
+    }
+    .card-choice {
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 8px 0 #CBD5E1;
+    }
+    .card-choice:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 11px 0 #94A3B8;
+    }
+    .card-choice:active {
+      transform: translateY(4px);
+      box-shadow: 0 3px 0 #94A3B8;
+    }
+    .card-correct {
+      border-color: #22C55E !important;
+      background-color: #DCFCE7 !important;
+      box-shadow: 0 8px 0 #16A34A !important;
+      animation: bounceCelebrate 0.6s ease;
+    }
+    .card-wrong {
+      border-color: #F59E0B !important;
+      background-color: #FEF3C7 !important;
+      box-shadow: 0 8px 0 #D97706 !important;
+      animation: gentleWiggle 0.5s ease;
+    }
+    @keyframes bounceCelebrate {
+      0%, 100% { transform: scale(1); }
+      40% { transform: scale(1.06); }
+      70% { transform: scale(0.98); }
+    }
+    @keyframes gentleWiggle {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+    @keyframes pulseSpeaker {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.12); }
+    }
+    .speaker-pulse {
+      animation: pulseSpeaker 1.4s infinite ease-in-out;
+    }
+    /* Konfeti animasi ringan */
+    .confetti-piece {
+      position: fixed;
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      pointer-events: none;
+      z-index: 9999;
+      animation: fallConfetti 1.8s ease-out forwards;
+    }
+    @keyframes fallConfetti {
+      0% { transform: translateY(-20vh) rotate(0deg) scale(1); opacity: 1; }
+      100% { transform: translateY(105vh) rotate(720deg) scale(0.7); opacity: 0; }
+    }
+    /* Pengaturan cetak khusus laporan guru */
+    @media print {
+      body * { visibility: hidden; }
+      #printable-area, #printable-area * { visibility: visible; }
+      #printable-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: white !important;
+      }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="text-slate-800 flex flex-col justify-between">
+
+  <!-- HEADER ATAS SEDERHANA & RAMAH ANAK -->
+  <header class="w-full max-w-5xl mx-auto px-4 pt-4 pb-2 flex items-center justify-between gap-2">
+    <button onclick="goHome()" class="btn-3d bg-white border-4 border-sky-400 text-sky-700 px-4 py-2 rounded-2xl font-extrabold text-base sm:text-lg flex items-center gap-2">
+      <span class="text-2xl">🏠</span>
+      <span class="hidden sm:inline">BERANDA</span>
+    </button>
+
+    <div class="flex items-center gap-2 bg-white/90 px-4 py-2 rounded-2xl border-2 border-amber-300 shadow-sm">
+      <span class="text-2xl">🕌</span>
+      <span class="font-display font-bold text-base sm:text-xl text-teal-800 tracking-wide">PAI & BUDI PEKERTI SLB</span>
+    </div>
+
+    <!-- Tombol Mode Guru (Tersembunyi secara halus agar tidak membingungkan siswa) -->
+    <button onclick="openTeacherModal()" title="Menu Khusus Guru" class="btn-3d bg-indigo-600 border-4 border-indigo-800 text-white px-3 sm:px-4 py-2 rounded-2xl font-extrabold text-sm sm:text-base flex items-center gap-2">
+      <span class="text-xl">👩‍🏫</span>
+      <span>GURU</span>
+    </button>
+  </header>
+
+  <!-- KONTEN UTAMA APLIKASI -->
+  <main id="app-container" class="w-full max-w-5xl mx-auto px-4 py-3 flex-grow flex flex-col justify-center">
+    <!-- Konten dinamis akan dirender oleh JavaScript -->
+  </main>
+
+  <!-- MODAL PETUNJUK VISUAL & AUDIO UNTUK SISWA -->
+  <div id="guide-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white border-4 border-amber-400 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl text-center relative">
+      <h2 class="font-display text-2xl sm:text-3xl font-bold text-amber-600 mb-4">CARA BERMAIN KUIS</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-sky-50 border-3 border-sky-300 rounded-2xl p-4 flex flex-col items-center">
+          <div class="text-5xl mb-2">👂</div>
+          <p class="font-extrabold text-lg text-sky-800">1. DENGARKAN</p>
+          <p class="text-sm font-bold text-slate-600 mt-1">Tekan tombol speaker biru untuk mendengar suara soal.</p>
+        </div>
+        <div class="bg-emerald-50 border-3 border-emerald-300 rounded-2xl p-4 flex flex-col items-center">
+          <div class="text-5xl mb-2">👀</div>
+          <p class="font-extrabold text-lg text-emerald-800">2. LIHAT GAMBAR</p>
+          <p class="text-sm font-bold text-slate-600 mt-1">Perhatikan gambar kegiatan anak yang baik.</p>
+        </div>
+        <div class="bg-amber-50 border-3 border-amber-300 rounded-2xl p-4 flex flex-col items-center">
+          <div class="text-5xl mb-2">👆</div>
+          <p class="font-extrabold text-lg text-amber-800">3. SENTUH GAMBAR</p>
+          <p class="text-sm font-bold text-slate-600 mt-1">Sentuh gambar jawaban A, B, C, atau D yang benar.</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap justify-center gap-3">
+        <button onclick="speakGuide()" class="btn-3d bg-sky-500 border-4 border-sky-700 text-white px-6 py-3 rounded-2xl font-extrabold text-lg flex items-center gap-2">
+          <span class="text-2xl">🔊</span> DENGAR PETUNJUK
+        </button>
+        <button onclick="closeGuideModal()" class="btn-3d bg-emerald-500 border-4 border-emerald-700 text-white px-8 py-3 rounded-2xl font-extrabold text-lg">
+          MENGERTI 👍
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL UMPAN BALIK JAWABAN (RAMAH & POSITIF) -->
+  <div id="feedback-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div id="feedback-box" class="bg-white border-8 border-emerald-400 rounded-3xl max-w-md w-full p-6 sm:p-8 text-center shadow-2xl transform transition-all">
+      <div id="feedback-emoji" class="text-7xl sm:text-8xl mb-3">🌟</div>
+      <h3 id="feedback-title" class="font-display text-2xl sm:text-3xl font-bold text-emerald-600 mb-2">HEBAT!</h3>
+      <p id="feedback-desc" class="text-lg sm:text-xl font-extrabold text-slate-700 mb-6">Jawaban kamu benar!</p>
+      <button id="feedback-btn" onclick="handleFeedbackAction()" class="btn-3d w-full bg-emerald-500 border-4 border-emerald-700 text-white py-4 rounded-2xl font-display text-2xl font-bold">
+        LANJUT ➡️
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL MENU KHUSUS GURU & PENGUNDUH WORD / GOOGLE DOCS -->
+  <div id="teacher-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden items-center justify-center p-2 sm:p-4 overflow-y-auto">
+    <div id="printable-area" class="bg-white border-4 border-indigo-500 rounded-3xl max-w-5xl w-full max-h-[92vh] overflow-y-auto p-5 sm:p-8 shadow-2xl">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b-2 border-slate-200 pb-4 mb-5 no-print">
+        <div>
+          <h2 class="font-display text-2xl sm:text-3xl font-bold text-indigo-800">👩‍🏫 MENU KHUSUS GURU SLB FASE C</h2>
+          <p class="text-sm font-bold text-slate-500">Rekap Nilai, Kunci Jawaban 40 Soal, & Unduh Perangkat Word / Google Docs</p>
+        </div>
+        <button onclick="closeTeacherModal()" class="btn-3d bg-rose-500 border-4 border-rose-700 text-white px-5 py-2 rounded-2xl font-extrabold">
+          TUTUP ✖
+        </button>
+      </div>
+
+      <!-- TAB NAVIGASI GURU -->
+      <div class="flex flex-wrap gap-2 mb-6 no-print">
+        <button onclick="switchTeacherTab('rekap')" id="tab-btn-rekap" class="px-4 py-2.5 rounded-xl font-extrabold text-sm sm:text-base bg-indigo-600 text-white">
+          📊 Rekap Nilai Siswa
+        </button>
+        <button onclick="switchTeacherTab('kunci')" id="tab-btn-kunci" class="px-4 py-2.5 rounded-xl font-extrabold text-sm sm:text-base bg-slate-200 text-slate-700">
+          🔑 Kunci Jawaban (40 Soal)
+        </button>
+        <button onclick="switchTeacherTab('dokumen')" id="tab-btn-dokumen" class="px-4 py-2.5 rounded-xl font-extrabold text-sm sm:text-base bg-emerald-100 text-emerald-800 border-2 border-emerald-400">
+          📄 Unduh Word & Google Docs
+        </button>
+        <button onclick="switchTeacherTab('panduan')" id="tab-btn-panduan" class="px-4 py-2.5 rounded-xl font-extrabold text-sm sm:text-base bg-slate-200 text-slate-700">
+          📘 Panduan Guru
+        </button>
+      </div>
+
+      <!-- KONTEN TAB 1: REKAP NILAI -->
+      <div id="teacher-tab-rekap">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4 no-print">
+          <h3 class="font-display text-xl font-bold text-slate-800">Daftar Hasil Pengerjaan Peserta Didik</h3>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="downloadCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-bold text-sm">
+              ⬇️ Unduh Excel/CSV
+            </button>
+            <button onclick="window.print()" class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-xl font-bold text-sm">
+              🖨️ Cetak Laporan
+            </button>
+            <button onclick="clearHistoryPrompt()" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-2 rounded-xl font-bold text-sm">
+              🗑️ Reset Data
+            </button>
+          </div>
+        </div>
+        <div id="reset-confirm-box" class="hidden bg-rose-50 border-2 border-rose-300 rounded-xl p-3 mb-4 flex items-center justify-between no-print">
+          <span class="font-bold text-rose-800 text-sm">Yakin ingin menghapus seluruh riwayat nilai di perangkat ini?</span>
+          <div class="flex gap-2">
+            <button onclick="confirmClearHistory()" class="bg-rose-600 text-white px-3 py-1 rounded-lg font-bold text-xs">Ya, Hapus</button>
+            <button onclick="cancelClearHistory()" class="bg-slate-300 text-slate-800 px-3 py-1 rounded-lg font-bold text-xs">Batal</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto border-2 border-slate-200 rounded-2xl">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-indigo-50 text-indigo-900 border-b-2 border-slate-200">
+                <th class="p-3 font-extrabold">No</th>
+                <th class="p-3 font-extrabold">Nama Siswa</th>
+                <th class="p-3 font-extrabold">Materi / Mode</th>
+                <th class="p-3 font-extrabold text-center">Benar</th>
+                <th class="p-3 font-extrabold text-center">Salah</th>
+                <th class="p-3 font-extrabold text-center">Nilai</th>
+                <th class="p-3 font-extrabold">Catatan Kemampuan</th>
+                <th class="p-3 font-extrabold">Waktu</th>
+              </tr>
+            </thead>
+            <tbody id="rekap-table-body" class="divide-y divide-slate-200 font-semibold">
+              <!-- Diisi via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- KONTEN TAB 2: KUNCI JAWABAN 40 SOAL -->
+      <div id="teacher-tab-kunci" class="hidden">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-display text-xl font-bold text-slate-800">Kunci Jawaban Lengkap 40 Soal (4 Materi)</h3>
+          <button onclick="window.print()" class="bg-sky-600 text-white px-4 py-2 rounded-xl font-bold text-sm no-print">🖨️ Cetak Kunci</button>
+        </div>
+        <div id="answer-key-container" class="space-y-6">
+          <!-- Diisi via JS -->
+        </div>
+      </div>
+
+      <!-- KONTEN TAB 3: UNDUH WORD & GOOGLE DOCS -->
+      <div id="teacher-tab-dokumen" class="hidden">
+        <div class="bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-5 mb-5">
+          <h3 class="font-display text-xl font-bold text-emerald-900 mb-2">📄 Perangkat Pembelajaran & Bank Soal Lengkap</h3>
+          <p class="text-sm font-bold text-emerald-800 mb-4">
+            Dokumen ini berisi lengkap 10 komponen perangkat ajar: (1) Judul Kegiatan, (2) Identitas Materi SLB Fase C, (3) Tujuan Pembelajaran, (4) Kisi-kisi 40 Soal, (5) Naskah Lengkap 40 Soal, (6) Pilihan Jawaban A-D & Deskripsi Visual, (7) Kunci Jawaban, (8) Indikator Penilaian, (9) Pedoman Penskoran, dan (10) Lembar Rekap Nilai Peserta Didik.
+          </p>
+          <div class="flex flex-wrap gap-3">
+            <button onclick="downloadWordDoc()" class="btn-3d bg-blue-600 border-4 border-blue-800 text-white px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2">
+              <span>📘</span> UNDUH FILE MICROSOFT WORD (.DOC)
+            </button>
+            <button onclick="copyForGoogleDocs()" class="btn-3d bg-emerald-600 border-4 border-emerald-800 text-white px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2">
+              <span>📋</span> SALIN UNTUK GOOGLE DOCS
+            </button>
+          </div>
+          <div id="copy-toast" class="hidden mt-3 bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold">
+            ✅ Berhasil disalin! Silakan buka docs.new di browser Anda lalu tekan Ctrl+V (Tempel). File .doc yang diunduh juga dapat langsung diunggah ke Google Drive dan dibuka dengan Google Docs.
+          </div>
+        </div>
+        <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 text-xs sm:text-sm font-semibold text-slate-700">
+          <p class="font-extrabold text-slate-900 mb-1">💡 Cara Membuka di Google Docs:</p>
+          <ol class="list-decimal ml-5 space-y-1">
+            <li>Klik tombol <strong>"UNDUH FILE MICROSOFT WORD (.DOC)"</strong> di atas.</li>
+            <li>Buka <strong>Google Drive</strong> (drive.google.com) → Klik <strong>+ Baru</strong> → <strong>Upload file</strong> → Pilih file <code>Perangkat_Kuis_PAI_SLB_Fase_C.doc</code>.</li>
+            <li>Klik dua kali file tersebut di Google Drive, lalu pilih <strong>Buka dengan Google Dokumen (Google Docs)</strong> agar dapat diedit secara kolaboratif.</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- KONTEN TAB 4: PANDUAN PENGGUNAAN GURU -->
+      <div id="teacher-tab-panduan" class="hidden space-y-4 text-sm sm:text-base font-semibold text-slate-700">
+        <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5">
+          <h3 class="font-display text-xl font-bold text-amber-900 mb-2">📘 Panduan Penggunaan Aplikasi untuk Guru SLB</h3>
+          <ul class="list-disc ml-5 space-y-2">
+            <li><strong>Pendampingan Siswa Non-Pembaca:</strong> Aplikasi ini otomatis membacakan setiap pertanyaan menggunakan suara Bahasa Indonesia (<em>Text-to-Speech</em>). Guru atau siswa juga dapat menekan tombol <strong>🔊 DENGAR SOAL</strong> berkali-kali atau menekan ikon <strong>🔊</strong> kecil pada tiap kartu pilihan jawaban A, B, C, D untuk mendengarkan keterangan gambar.</li>
+            <li><strong>Pilihan Mode Pengerjaan:</strong> Guru dapat memilih mengerjakan <strong>Semua 40 Soal sekaligus</strong> atau memilih <strong>per Materi (10 Soal)</strong> agar peserta didik SLB Fase C tidak kelelahan dan lebih fokus.</li>
+            <li><strong>Tanpa Batas Waktu & Tanpa Hukuman:</strong> Tidak ada penghitung mundur (timer) yang membuat siswa panik. Jika siswa salah memilih gambar, sistem akan memberi semangat lembut <em>"Tidak apa-apa, ayo coba lagi!"</em> hingga siswa menemukan perilaku yang tepat.</li>
+            <li><strong>Penyimpanan Otomatis Offline:</strong> Seluruh ilustrasi dirender langsung di dalam aplikasi (tanpa internet pun tetap tampil tajam), dan nilai otomatis tersimpan di <em>LocalStorage</em> perangkat.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER RINGKAS -->
+  <footer class="w-full text-center py-2 px-4 text-xs font-bold text-slate-500">
+    Media Pembelajaran Interaktif PAI & Budi Pekerti • Kurikulum Merdeka SLB Fase C
+  </footer>
+
+<script>
+/**
+ * ============================================================================
+ * 1. GENERATOR ILUSTRASI VEKTOR KARTUN 3D-STYLE RAMAH ANAK (OFFLINE SVG)
+ * Menghasilkan ilustrasi kaya warna, ekspresif, dan konkret untuk setiap
+ * skenario kehidupan sehari-hari anak Indonesia tanpa bergantung tautan luar.
+ * ============================================================================
+ */
+function renderIllustration(sceneId, size = 'md') {
+  const dim = size === 'lg' ? 'w-44 h-36 sm:w-56 sm:h-44' : 'w-28 h-24 sm:w-36 sm:h-28';
+  
+  // Template dasar avatar anak ceria dengan efek bayangan 3D lembut
+  const scenes = {
+    // --- MATERI 1: QS AL-KAFIRUN ---
+    'quran_6': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <defs>
+          <linearGradient id="bgSky" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#BAE6FD"/><stop offset="100%" stop-color="#E0F2FE"/></linearGradient>
+          <linearGradient id="bookG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981"/><stop offset="100%" stop-color="#047857"/></linearGradient>
+        </defs>
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="url(#bgSky)"/>
+        <rect x="35" y="45" width="130" height="85" rx="14" fill="url(#bookG)"/>
+        <path d="M45 40 Q100 52 100 52 Q100 52 155 40 L155 118 Q100 128 100 128 Q100 128 45 118 Z" fill="#FFFBEB"/>
+        <line x1="100" y1="52" x2="100" y2="128" stroke="#D97706" stroke-width="3"/>
+        <circle cx="152" cy="36" r="24" fill="#F59E0B" stroke="#FFF" stroke-width="4"/>
+        <text x="152" y="45" text-anchor="middle" fill="#FFF" font-size="26" font-weight="900">6</text>
+        <text x="72" y="85" text-anchor="middle" fill="#065F46" font-size="13" font-weight="800">QS. AL-</text>
+        <text x="72" y="102" text-anchor="middle" fill="#065F46" font-size="13" font-weight="800">KAFIRUN</text>
+        <text x="128" y="88" text-anchor="middle" fill="#B45309" font-size="14" font-weight="900">٦ آيَات</text>
+      </svg>`,
+    'quran_wrong_num': (num) => `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#F1F5F9"/>
+        <rect x="45" y="45" width="110" height="80" rx="14" fill="#94A3B8"/>
+        <rect x="53" y="40" width="94" height="75" rx="10" fill="#FFFFFF"/>
+        <circle cx="100" cy="78" r="28" fill="#E2E8F0"/>
+        <text x="100" y="88" text-anchor="middle" fill="#475569" font-size="30" font-weight="900">${num}</text>
+      </svg>`,
+    'muslim_pray': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#ECFDF5"/>
+        <!-- Sajadah -->
+        <rect x="45" y="112" width="110" height="28" rx="8" fill="#10B981"/>
+        <!-- Badan & Koko -->
+        <rect x="74" y="74" width="52" height="44" rx="18" fill="#3B82F6"/>
+        <!-- Kepala -->
+        <circle cx="100" cy="52" r="24" fill="#FDBA74"/>
+        <!-- Peci -->
+        <path d="M77 44 Q100 24 123 44 Z" fill="#1E293B"/>
+        <!-- Mata & Senyum -->
+        <circle cx="92" cy="52" r="3" fill="#1E293B"/>
+        <circle cx="108" cy="52" r="3" fill="#1E293B"/>
+        <path d="M93 61 Q100 67 107 61" stroke="#9A3412" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- Tangan berdoa -->
+        <ellipse cx="91" cy="86" rx="8" ry="11" fill="#FDBA74" stroke="#EA580C" stroke-width="1.5"/>
+        <ellipse cx="109" cy="86" rx="8" ry="11" fill="#FDBA74" stroke="#EA580C" stroke-width="1.5"/>
+        <text x="100" y="25" text-anchor="middle" fill="#047857" font-size="13" font-weight="900">BERDOA & SHALAT</text>
+      </svg>`,
+    'respect_friend_pray': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#FEF3C7"/>
+        <!-- Anak 1 beribadah -->
+        <circle cx="62" cy="58" r="20" fill="#FDBA74"/>
+        <rect x="44" y="80" width="36" height="45" rx="14" fill="#8B5CF6"/>
+        <path d="M56 88 L62 78 L68 88" stroke="#FFF" stroke-width="3" fill="none"/>
+        <!-- Anak 2 Muslim menunggu dengan sopan & tersenyum -->
+        <circle cx="138" cy="58" r="20" fill="#FDBA74"/>
+        <path d="M119 50 Q138 33 157 50 Z" fill="#0F172A"/>
+        <rect x="120" y="80" width="36" height="45" rx="14" fill="#10B981"/>
+        <path d="M132 64 Q138 70 144 64" stroke="#7C2D12" stroke-width="2.5" fill="none"/>
+        <!-- Ikon Hati Damai -->
+        <text x="100" y="42" text-anchor="middle" font-size="24">🤝</text>
+        <text x="100" y="144" text-anchor="middle" fill="#92400E" font-size="12" font-weight="900">MENGHORMATI IBADAH</text>
+      </svg>`,
+    'disturb_friend': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#FEE2E2"/>
+        <circle cx="65" cy="64" r="20" fill="#FDBA74"/>
+        <rect x="47" y="86" width="36" height="42" rx="14" fill="#64748B"/>
+        <path d="M58 70 Q65 65 72 70" stroke="#7C2D12" stroke-width="2.5" fill="none"/>
+        <!-- Anak mengganggu berteriak -->
+        <circle cx="135" cy="64" r="20" fill="#FDBA74"/>
+        <rect x="117" y="86" width="36" height="42" rx="14" fill="#EF4444"/>
+        <circle cx="135" cy="71" r="6" fill="#7F1D1D"/>
+        <text x="105" y="45" text-anchor="middle" font-size="22">📢💥</text>
+        <text x="100" y="144" text-anchor="middle" fill="#B91C1C" font-size="12" font-weight="900">MENGGANGGU TEMAN</text>
+      </svg>`,
+    'play_together_diverse': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#E0F2FE"/>
+        <rect x="8" y="116" width="184" height="36" rx="12" fill="#86EFAC"/>
+        <!-- Anak Berhijab -->
+        <circle cx="62" cy="62" r="22" fill="#F472B6"/>
+        <circle cx="62" cy="64" r="16" fill="#FDBA74"/>
+        <rect x="44" y="84" width="36" height="38" rx="14" fill="#EC4899"/>
+        <!-- Teman Beda Agama -->
+        <circle cx="138" cy="62" r="19" fill="#FDBA74"/>
+        <path d="M120 55 Q138 38 156 55" fill="#451A03"/>
+        <rect x="120" y="84" width="36" height="38" rx="14" fill="#3B82F6"/>
+        <!-- Bola -->
+        <circle cx="100" cy="108" r="14" fill="#FACC15" stroke="#CA8A04" stroke-width="3"/>
+        <text x="100" y="32" text-anchor="middle" fill="#0369A1" font-size="13" font-weight="900">BERMAIN RUKUN</text>
+      </svg>`,
+    'mock_or_fight': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#FEF2F2"/>
+        <circle cx="68" cy="65" r="20" fill="#FDBA74"/>
+        <rect x="50" y="87" width="36" height="40" rx="14" fill="#F97316"/>
+        <line x1="60" y1="58" x2="67" y2="62" stroke="#000" stroke-width="3"/>
+        <circle cx="132" cy="65" r="20" fill="#FDBA74"/>
+        <rect x="114" y="87" width="36" height="40" rx="14" fill="#64748B"/>
+        <path d="M125 74 Q132 68 139 74" stroke="#000" stroke-width="2.5" fill="none"/>
+        <text x="100" y="42" text-anchor="middle" font-size="24">💢😠</text>
+        <text x="100" y="144" text-anchor="middle" fill="#991B1B" font-size="12" font-weight="900">BERTENGKAR / MENGEJEK</text>
+      </svg>`,
+    'force_religion': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#FFF1F2"/>
+        <circle cx="64" cy="65" r="20" fill="#FDBA74"/>
+        <rect x="46" y="87" width="36" height="40" rx="14" fill="#EF4444"/>
+        <line x1="82" y1="95" x2="112" y2="95" stroke="#EF4444" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="136" cy="65" r="20" fill="#FDBA74"/>
+        <rect x="118" y="87" width="36" height="40" rx="14" fill="#94A3B8"/>
+        <text x="100" y="40" text-anchor="middle" font-size="24">🚫😠</text>
+        <text x="100" y="144" text-anchor="middle" fill="#BE123C" font-size="12" font-weight="900">MEMAKSA TEMAN</text>
+      </svg>`,
+    'greet_polite': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#F0FDF4"/>
+        <circle cx="66" cy="62" r="20" fill="#FDBA74"/>
+        <rect x="48" y="84" width="36" height="42" rx="14" fill="#22C55E"/>
+        <circle cx="134" cy="62" r="20" fill="#FDBA74"/>
+        <rect x="116" y="84" width="36" height="42" rx="14" fill="#0EA5E9"/>
+        <text x="100" y="42" text-anchor="middle" font-size="24">👋😊</text>
+        <text x="100" y="144" text-anchor="middle" fill="#15803D" font-size="12" font-weight="900">MENYAPA RAMAH</text>
+      </svg>`,
+
+    // --- MATERI 2: HADIS MENGHORMATI PERBEDAAN ---
+    'share_food': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#FEF9C3"/>
+        <circle cx="62" cy="60" r="20" fill="#FDBA74"/>
+        <rect x="44" y="82" width="36" height="44" rx="14" fill="#F59E0B"/>
+        <circle cx="138" cy="60" r="20" fill="#FDBA74"/>
+        <rect x="120" y="82" width="36" height="44" rx="14" fill="#10B981"/>
+        <!-- Kotak Bekal / Roti -->
+        <rect x="84" y="88" width="32" height="22" rx="6" fill="#FB7185"/>
+        <text x="100" y="42" text-anchor="middle" font-size="24">🍱❤️</text>
+        <text x="100" y="144" text-anchor="middle" fill="#A16207" font-size="12" font-weight="900">BERBAGI MAKANAN</text>
+      </svg>`,
+    'help_wheelchair': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#E0E7FF"/>
+        <!-- Anak berkursi roda -->
+        <circle cx="75" cy="58" r="18" fill="#FDBA74"/>
+        <rect x="60" y="78" width="30" height="30" rx="10" fill="#3B82F6"/>
+        <circle cx="75" cy="112" r="18" fill="none" stroke="#1E293B" stroke-width="5"/>
+        <!-- Teman membantu mendorong dengan senyum -->
+        <circle cx="128" cy="54" r="19" fill="#FDBA74"/>
+        <rect x="112" y="75" width="32" height="48" rx="12" fill="#10B981"/>
+        <line x1="112" y1="88" x2="92" y2="88" stroke="#FDBA74" stroke-width="6" stroke-linecap="round"/>
+        <text x="100" y="30" text-anchor="middle" fill="#3730A3" font-size="13" font-weight="900">MENOLONG TEMAN</text>
+      </svg>`,
+    'help_fallen': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#ECFDF5"/>
+        <!-- Anak terjatuh -->
+        <circle cx="65" cy="88" r="18" fill="#FDBA74"/>
+        <rect x="46" y="106" width="42" height="22" rx="10" fill="#F97316"/>
+        <!-- Anak menolong ulurkan tangan -->
+        <circle cx="128" cy="56" r="20" fill="#FDBA74"/>
+        <rect x="110" y="78" width="36" height="48" rx="14" fill="#0EA5E9"/>
+        <line x1="110" y1="90" x2="84" y2="95" stroke="#FDBA74" stroke-width="7" stroke-linecap="round"/>
+        <text x="100" y="34" text-anchor="middle" fill="#065F46" font-size="13" font-weight="900">MEMBANTU BANGKIT</text>
+      </svg>`,
+    'laugh_at_fallen': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#FEE2E2"/>
+        <circle cx="62" cy="92" r="17" fill="#FDBA74"/>
+        <rect x="45" y="109" width="38" height="20" rx="9" fill="#64748B"/>
+        <circle cx="132" cy="58" r="20" fill="#FDBA74"/>
+        <rect x="114" y="80" width="36" height="46" rx="14" fill="#EF4444"/>
+        <text x="132" y="35" text-anchor="middle" font-size="22">😆👉</text>
+        <text x="100" y="144" text-anchor="middle" fill="#991B1B" font-size="12" font-weight="900">MENERTAWAKAN TEMAN</text>
+      </svg>`,
+    'listen_opinion': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#F3E8FF"/>
+        <circle cx="64" cy="64" r="20" fill="#FDBA74"/>
+        <rect x="46" y="86" width="36" height="42" rx="14" fill="#A855F7"/>
+        <circle cx="136" cy="64" r="20" fill="#FDBA74"/>
+        <rect x="118" y="86" width="36" height="42" rx="14" fill="#3B82F6"/>
+        <text x="100" y="42" text-anchor="middle" font-size="24">💬👂</text>
+        <text x="100" y="144" text-anchor="middle" fill="#6B21A8" font-size="12" font-weight="900">MENDENGARKAN TEMAN</text>
+      </svg>`,
+    'exclude_friend': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#F1F5F9"/>
+        <circle cx="52" cy="68" r="18" fill="#FDBA74"/>
+        <rect x="36" y="88" width="32" height="38" rx="12" fill="#94A3B8"/>
+        <path d="M46 74 Q52 69 58 74" stroke="#000" stroke-width="2" fill="none"/>
+        <circle cx="125" cy="64" r="18" fill="#FDBA74"/>
+        <circle cx="155" cy="64" r="18" fill="#FDBA74"/>
+        <rect x="112" y="84" width="56" height="42" rx="12" fill="#F43F5E"/>
+        <text x="100" y="144" text-anchor="middle" fill="#475569" font-size="12" font-weight="900">MENGUCILKAN TEMAN</text>
+      </svg>`,
+
+    // --- MATERI 3: IMAN KEPADA QADA DAN QADAR ---
+    'study_hard': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#EFF6FF"/>
+        <!-- Meja -->
+        <rect x="30" y="106" width="140" height="34" rx="10" fill="#D97706"/>
+        <!-- Anak Belajar -->
+        <circle cx="100" cy="54" r="22" fill="#FDBA74"/>
+        <path d="M80 46 Q100 28 120 46 Z" fill="#1E293B"/>
+        <rect x="74" y="76" width="52" height="32" rx="14" fill="#2563EB"/>
+        <!-- Buku Terbuka -->
+        <path d="M62 96 L100 104 L138 96 L138 114 L100 120 L62 114 Z" fill="#FFFFFF" stroke="#93C5FD" stroke-width="2"/>
+        <text x="100" y="25" text-anchor="middle" fill="#1D4ED8" font-size="13" font-weight="900">RAJIN BELAJAR</text>
+      </svg>`,
+    'play_game_lazy': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#FEF2F2"/>
+        <circle cx="100" cy="56" r="22" fill="#FDBA74"/>
+        <rect x="74" y="80" width="52" height="44" rx="16" fill="#EF4444"/>
+        <rect x="82" y="88" width="36" height="22" rx="6" fill="#1E293B"/>
+        <text x="100" y="104" text-anchor="middle" fill="#38BDF8" font-size="12" font-weight="900">GAME</text>
+        <text x="100" y="144" text-anchor="middle" fill="#B91C1C" font-size="12" font-weight="900">MALAS BELAJAR</text>
+      </svg>`,
+    'sleep_class': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#F1F5F9"/>
+        <rect x="35" y="105" width="130" height="32" rx="10" fill="#94A3B8"/>
+        <circle cx="100" cy="84" r="22" fill="#FDBA74"/>
+        <text x="135" y="55" font-size="22">💤</text>
+        <text x="100" y="144" text-anchor="middle" fill="#475569" font-size="12" font-weight="900">TIDUR SAAT BELAJAR</text>
+      </svg>`,
+    'grateful_trophy': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#FEF3C7"/>
+        <circle cx="85" cy="60" r="22" fill="#FDBA74"/>
+        <rect x="62" y="84" width="46" height="44" rx="16" fill="#10B981"/>
+        <path d="M77 65 Q85 73 93 65" stroke="#7C2D12" stroke-width="3" fill="none"/>
+        <text x="142" y="82" text-anchor="middle" font-size="44">🏆</text>
+        <text x="100" y="28" text-anchor="middle" fill="#B45309" font-size="13" font-weight="900">ALHAMDULILLAH BERSYUKUR</text>
+      </svg>`,
+    'patient_try_again': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#ECFDF5"/>
+        <circle cx="100" cy="58" r="22" fill="#FDBA74"/>
+        <rect x="74" y="82" width="52" height="44" rx="16" fill="#0EA5E9"/>
+        <path d="M92 64 Q100 71 108 64" stroke="#7C2D12" stroke-width="3" fill="none"/>
+        <text x="144" y="76" font-size="32">💪</text>
+        <text x="100" y="28" text-anchor="middle" fill="#047857" font-size="13" font-weight="900">SABAR & TETAP SEMANGAT</text>
+      </svg>`,
+    'angry_cry_giveup': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#FEE2E2"/>
+        <circle cx="100" cy="62" r="22" fill="#FDBA74"/>
+        <rect x="74" y="86" width="52" height="42" rx="16" fill="#EF4444"/>
+        <path d="M90 72 Q100 63 110 72" stroke="#7F1D1D" stroke-width="3" fill="none"/>
+        <text x="142" y="65" font-size="26">😡😭<text>
+        <text x="100" y="144" text-anchor="middle" fill="#B91C1C" font-size="12" font-weight="900">MARAH & MENYERAH</text>
+      </svg>`,
+    'pray_before_exam': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#F0FDF4"/>
+        <circle cx="100" cy="54" r="22" fill="#FDBA74"/>
+        <rect x="74" y="78" width="52" height="46" rx="16" fill="#14B8A6"/>
+        <ellipse cx="90" cy="90" rx="8" ry="11" fill="#FDBA74"/>
+        <ellipse cx="110" cy="90" rx="8" ry="11" fill="#FDBA74"/>
+        <text x="100" y="26" text-anchor="middle" fill="#0F766E" font-size="13" font-weight="900">BERDOA KEPADA ALLAH</text>
+      </svg>`,
+
+    // --- MATERI 4: PEDULI LINGKUNGAN SEKOLAH ---
+    'trash_in_bin': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#DCFCE7"/>
+        <!-- Anak -->
+        <circle cx="72" cy="56" r="20" fill="#FDBA74"/>
+        <rect x="54" y="78" width="36" height="48" rx="14" fill="#3B82F6"/>
+        <line x1="90" y1="88" x2="122" y2="82" stroke="#FDBA74" stroke-width="7" stroke-linecap="round"/>
+        <!-- Tempat Sampah Hijau -->
+        <rect x="122" y="84" width="38" height="44" rx="6" fill="#16A34A"/>
+        <rect x="118" y="78" width="46" height="8" rx="4" fill="#15803D"/>
+        <circle cx="128" cy="72" r="6" fill="#FACC15"/>
+        <text x="100" y="28" text-anchor="middle" fill="#166534" font-size="13" font-weight="900">BUANG KE TONG SAMPAH</text>
+      </svg>`,
+    'litter_floor': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#FEE2E2"/>
+        <circle cx="80" cy="56" r="20" fill="#FDBA74"/>
+        <rect x="62" y="78" width="36" height="46" rx="14" fill="#EF4444"/>
+        <!-- Sampah berserakan di lantai -->
+        <circle cx="125" cy="122" r="7" fill="#94A3B8"/>
+        <circle cx="145" cy="118" r="8" fill="#F59E0B"/>
+        <rect x="110" y="124" width="14" height="6" fill="#64748B"/>
+        <text x="100" y="144" text-anchor="middle" fill="#991B1B" font-size="12" font-weight="900">BUANG SEMBARANGAN</text>
+      </svg>`,
+    'litter_gutter': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#FEF2F2"/>
+        <rect x="20" y="108" width="160" height="32" rx="8" fill="#475569"/>
+        <circle cx="75" cy="56" r="19" fill="#FDBA74"/>
+        <rect x="58" y="77" width="34" height="35" rx="12" fill="#F97316"/>
+        <circle cx="125" cy="120" r="8" fill="#FACC15"/>
+        <circle cx="148" cy="122" r="7" fill="#EF4444"/>
+        <text x="100" y="28" text-anchor="middle" fill="#B91C1C" font-size="12" font-weight="900">BUANG KE SELOKAN</text>
+      </svg>`,
+    'sweep_floor': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#E0F2FE"/>
+        <circle cx="78" cy="54" r="20" fill="#FDBA74"/>
+        <rect x="60" y="76" width="36" height="48" rx="14" fill="#0EA5E9"/>
+        <!-- Sapu -->
+        <line x1="108" y1="55" x2="128" y2="118" stroke="#92400E" stroke-width="6" stroke-linecap="round"/>
+        <path d="M116 116 L142 116 L148 134 L112 134 Z" fill="#F59E0B"/>
+        <text x="100" y="26" text-anchor="middle" fill="#0369A1" font-size="13" font-weight="900">MENYAPU LANTAI KELAS</text>
+      </svg>`,
+    'water_plants': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#ECFDF5"/>
+        <circle cx="68" cy="56" r="20" fill="#FDBA74"/>
+        <rect x="50" y="78" width="36" height="48" rx="14" fill="#10B981"/>
+        <!-- Gembor Air -->
+        <rect x="94" y="82" width="24" height="18" rx="5" fill="#3B82F6"/>
+        <text x="128" y="92" font-size="18">💧</text>
+        <!-- Tanaman Bunga -->
+        <rect x="132" y="108" width="26" height="20" rx="4" fill="#B45309"/>
+        <line x1="145" y1="108" x2="145" y2="85" stroke="#16A34A" stroke-width="5"/>
+        <circle cx="145" cy="80" r="11" fill="#F43F5E"/>
+        <text x="100" y="26" text-anchor="middle" fill="#065F46" font-size="13" font-weight="900">MENYIRAM TANAMAN</text>
+      </svg>`,
+    'stomp_plants': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#FEE2E2"/>
+        <circle cx="75" cy="56" r="20" fill="#FDBA74"/>
+        <rect x="57" y="78" width="36" height="46" rx="14" fill="#EF4444"/>
+        <path d="M120 124 L145 112 L160 126" stroke="#991B1B" stroke-width="5" fill="none"/>
+        <text x="142" y="104" font-size="24">🥀</text>
+        <text x="100" y="144" text-anchor="middle" fill="#991B1B" font-size="12" font-weight="900">MERUSAK TANAMAN</text>
+      </svg>`,
+    'tidy_desk': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#FEF9C3"/>
+        <circle cx="66" cy="56" r="20" fill="#FDBA74"/>
+        <rect x="48" y="78" width="36" height="48" rx="14" fill="#8B5CF6"/>
+        <!-- Meja & Kursi Rapi -->
+        <rect x="102" y="92" width="56" height="10" rx="4" fill="#D97706"/>
+        <rect x="108" y="102" width="8" height="26" fill="#92400E"/>
+        <rect x="144" y="102" width="8" height="26" fill="#92400E"/>
+        <rect x="115" y="82" width="28" height="10" rx="3" fill="#3B82F6"/>
+        <text x="100" y="26" text-anchor="middle" fill="#854D0E" font-size="13" font-weight="900">MERAPIKAN MEJA KURSI</text>
+      </svg>`,
+    'scribble_wall': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#FEE2E2"/>
+        <rect x="105" y="38" width="68" height="86" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+        <path d="M115 55 Q140 85 120 105 Q155 75 160 110" stroke="#EF4444" stroke-width="5" fill="none"/>
+        <circle cx="65" cy="60" r="20" fill="#FDBA74"/>
+        <rect x="47" y="82" width="36" height="44" rx="14" fill="#64748B"/>
+        <text x="100" y="144" text-anchor="middle" fill="#B91C1C" font-size="12" font-weight="900">MENCORET DINDING</text>
+      </svg>`,
+    'clean_toilet': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#E0F7FA"/>
+        <circle cx="68" cy="58" r="20" fill="#FDBA74"/>
+        <rect x="50" y="80" width="36" height="46" rx="14" fill="#06B6D4"/>
+        <!-- Gayung & Ember Bersih -->
+        <rect x="114" y="92" width="38" height="34" rx="8" fill="#3B82F6"/>
+        <text x="133" y="82" text-anchor="middle" font-size="24">✨🚿</text>
+        <text x="100" y="26" text-anchor="middle" fill="#0E7490" font-size="13" font-weight="900">MENYIRAM BERSIH TOILET</text>
+      </svg>`,
+    'class_picket_team': `
+      <svg viewBox="0 0 200 160" class="${dim} mx-auto drop-shadow-md">
+        <rect x="8" y="8" width="184" height="144" rx="24" fill="#DCFCE7"/>
+        <circle cx="62" cy="58" r="19" fill="#FDBA74"/>
+        <rect x="45" y="79" width="34" height="45" rx="13" fill="#22C55E"/>
+        <circle cx="138" cy="58" r="19" fill="#FDBA74"/>
+        <rect x="121" y="79" width="34" height="45" rx="13" fill="#3B82F6"/>
+        <text x="100" y="98" text-anchor="middle" font-size="28">🧹🧽</text>
+        <text x="100" y="26" text-anchor="middle" fill="#15803D" font-size="13" font-weight="900">PIKET KELAS BERSAMA</text>
+      </svg>`
+  };
+
+  if (sceneId.startsWith('quran_num_')) {
+    const n = sceneId.replace('quran_num_', '');
+    return scenes['quran_wrong_num'](n);
+  }
+  return scenes[sceneId] || scenes['muslim_pray'];
+}
+
+/**
+ * ============================================================================
+ * 2. BANK 40 SOAL PAI & BUDI PEKERTI SLB FASE C (4 MATERI x 10 SOAL)
+ * Bahasa sederhana, konkret, berfokus pada pengamatan gambar & audio.
+ * ============================================================================
+ */
+const QUIZ_DATA = [
+  // ==================== MATERI 1: QS AL-KAFIRUN (10 SOAL) ====================
+  {
+    id: 1, materi: 1, materiTitle: "Materi 1: QS. Al-Kafirun",
+    question: "Surah Al-Kafirun ada berapa ayat?",
+    mainVisual: "quran_6",
+    options: [
+      { label: "6 Ayat", visual: "quran_6" },
+      { label: "3 Ayat", visual: "quran_num_3" },
+      { label: "4 Ayat", visual: "quran_num_4" },
+      { label: "10 Ayat", visual: "quran_num_10" }
+    ],
+    answer: 0
+  },
+  {
+    id: 2, materi: 1, materiTitle: "Materi 1: QS. Al-Kafirun",
+    question: "Mana gambar anak Muslim yang sedang beribadah kepada Allah?",
+    mainVisual: "muslim_pray",
+    options: [
+      { label: "Mengganggu teman", visual: "disturb_friend" },
+      { label: "Berdoa dan shalat", visual: "muslim_pray" },
+      { label: "Bertengkar", visual: "mock_or_fight" },
+      { label: "Membuang sampah", visual: "litter_floor" }
+    ],
+    answer: 1
+  },
+  {
+    id: 3, materi: 1, materiTitle: "Materi 1: QS. Al-Kafirun",
+    question: "Teman berbeda agama sedang beribadah. Sikap kita yang baik adalah?",
+    mainVisual: "respect_friend_pray",
+    options: [
+      { label: "Berteriak keras", visual: "disturb_friend" },
+      { label: "Mengajak bertengkar", visual: "mock_or_fight" },
+      { label: "Tenang dan menghormati", visual: "respect_friend_pray" },
+      { label: "Memaksa ikut kita", visual: "force_religion" }
+    ],
+    answer: 2
+  },
+  {
+    id: 4, materi: 1, materiTitle: "Materi 1: QS. Al-Kafirun",
+    question: "Bolehkah kita memaksa teman untuk pindah agama?",
+    mainVisual: "respect_friend_pray",
+    options: [
+      { label: "Memaksa teman", visual: "force_religion" },
+      { label: "Marah kepada teman", visual: "mock_or_fight" },
+      { label: "Mengganggu ibadahnya", visual: "disturb_friend" },
+      { label: "Tidak boleh, saling menghargai", visual: "respect_friend_pray" }
+    ],
+    answer: 3
+  },
+  {
+    id: 5, materi: 1, materiTitle: "Materi 1: QS. Al-Kafirun",
+    question: "Mana gambar anak yang rukun bermain bersama teman berbeda agama?",
+    mainVisual: "play_together_diverse",
+    options: [
+      { label: "Bermain bersama rukun", visual: "play_together_diverse" },
+      { label: "Mengejek teman", visual: "mock_or_fight" },
+      { label: "Mengucilkan teman", visual: "exclude_friend" },
+      { label: "Memaksa teman", visual: "force_religion" }
+    ],
+    answer: 0
+  },
+  {
+    id: 6, materi: 1, materiTitle: "Materi 1: QS. Al-Kafirun",
+    question: "Pesan utama Surah Al-Kafirun adalah menghormati perbedaan agama. Mana contohnya?",
+    mainVisual: "greet_polite",
+    options: [
+      { label: "Mengganggu teman", visual: "disturb_friend" },
+      { label: "Menyapa teman dengan ramah", visual: "greet_polite" },
+      { label: "Memaksa teman", visual: "force_religion" },
+      { label: "Bertengkar di kelas", visual: "mock_or_fight" }
+    ],
+    answer: 1
+  },
+  {
+    id: 7, materi: 1, materiTitle: "Materi 1: QS. Al-Kafirun",
+    question: "Anak Muslim hanya menyembah kepada siapa?",
+    mainVisual: "muslim_pray",
+    options: [
+      { label: "Bermain game terus", visual: "play_game_lazy" },
+      { label: "Tidur saat belajar", visual: "sleep_class" },
+      { label: "Menyembah Allah Swt.", visual: "muslim_pray" },
+      { label: "Marah-marah", visual: "angry_cry_giveup" }
+    ],
+    answer: 2
+  },
+  {
+    id: 8, materi: 1, materiTitle: "Materi 1: QS. Al-Kafirun",
+    question: "Ketika bertemu tetangga yang berbeda agama, kita harus bersikap?",
+    mainVisual: "greet_polite",
+    options: [
+      { label: "Membuang muka", visual: "exclude_friend" },
+      { label: "Mengejeknya", visual: "mock_or_fight" },
+      { label: "Berteriak", visual: "disturb_friend" },
+      { label: "Tersenyum dan menyapa ramah", visual: "greet_polite" }
+    ],
+    answer: 3
+  },
+  {
+    id: 9, materi: 1, materiTitle: "Materi 1: QS. Al-Kafirun",
+    question: "Mana perilaku yang TIDAK sesuai dengan Surah Al-Kafirun?",
+    mainVisual: "disturb_friend",
+    options: [
+      { label: "Mengganggu teman beribadah", visual: "disturb_friend" },
+      { label: "Bermain bersama", visual: "play_together_diverse" },
+      { label: "Menghormati teman", visual: "respect_friend_pray" },
+      { label: "Menyapa dengan sopan", visual: "greet_polite" }
+    ],
+    answer: 0
+  },
+  {
+    id: 10, materi: 1, materiTitle: "Materi 1: QS. Al-Kafirun",
+    question: "Untukmu agamamu, dan untukku agamaku. Gambar mana yang menunjukkan hidup rukun?",
+    mainVisual: "play_together_diverse",
+    options: [
+      { label: "Bertengkar", visual: "mock_or_fight" },
+      { label: "Rukun saling menghargai", visual: "play_together_diverse" },
+      { label: "Memaksa teman", visual: "force_religion" },
+      { label: "Mengucilkan teman", visual: "exclude_friend" }
+    ],
+    answer: 1
+  },
+
+  // ==================== MATERI 2: HADIS MENGHORMATI PERBEDAAN (10 SOAL) ====================
+  {
+    id: 11, materi: 2, materiTitle: "Materi 2: Hadis Menghormati Perbedaan",
+    question: "Nabi Muhammad bersabda agar kita menyayangi saudara seperti menyayangi diri sendiri. Mana contohnya?",
+    mainVisual: "share_food",
+    options: [
+      { label: "Berbagi makanan dengan teman", visual: "share_food" },
+      { label: "Mengejek teman", visual: "mock_or_fight" },
+      { label: "Mengucilkan teman", visual: "exclude_friend" },
+      { label: "Menertawakan teman", visual: "laugh_at_fallen" }
+    ],
+    answer: 0
+  },
+  {
+    id: 12, materi: 2, materiTitle: "Materi 2: Hadis Menghormati Perbedaan",
+    question: "Ada teman yang memakai kursi roda. Apa yang harus kita lakukan?",
+    mainVisual: "help_wheelchair",
+    options: [
+      { label: "Meninggalkan teman", visual: "exclude_friend" },
+      { label: "Membantu mendorong dengan ramah", visual: "help_wheelchair" },
+      { label: "Menertawakannya", visual: "laugh_at_fallen" },
+      { label: "Memarahinya", visual: "mock_or_fight" }
+    ],
+    answer: 1
+  },
+  {
+    id: 13, materi: 2, materiTitle: "Materi 2: Hadis Menghormati Perbedaan",
+    question: "Teman terjatuh saat berlari. Mana gambar anak yang menolong teman?",
+    mainVisual: "help_fallen",
+    options: [
+      { label: "Menertawakan teman", visual: "laugh_at_fallen" },
+      { label: "Pergi menjauh", visual: "exclude_friend" },
+      { label: "Membantu teman berdiri", visual: "help_fallen" },
+      { label: "Berteriak marah", visual: "angry_cry_giveup" }
+    ],
+    answer: 2
+  },
+  {
+    id: 14, materi: 2, materiTitle: "Materi 2: Hadis Menghormati Perbedaan",
+    question: "Ketika teman sedang berbicara menyampaikan pendapat, sikap kita yang baik adalah?",
+    mainVisual: "listen_opinion",
+    options: [
+      { label: "Berteriak memotong", visual: "disturb_friend" },
+      { label: "Tidur di kelas", visual: "sleep_class" },
+      { label: "Mengejek teman", visual: "mock_or_fight" },
+      { label: "Mendengarkan dengan sopan", visual: "listen_opinion" }
+    ],
+    answer: 3
+  },
+  {
+    id: 15, materi: 2, materiTitle: "Materi 2: Hadis Menghormati Perbedaan",
+    question: "Kita tidak boleh membeda-bedakan teman. Mana gambar berteman dengan siapa saja?",
+    mainVisual: "play_together_diverse",
+    options: [
+      { label: "Bermain bersama semua teman", visual: "play_together_diverse" },
+      { label: "Mengucilkan satu teman", visual: "exclude_friend" },
+      { label: "Bertengkar", visual: "mock_or_fight" },
+      { label: "Memaksa teman", visual: "force_religion" }
+    ],
+    answer: 0
+  },
+  {
+    id: 16, materi: 2, materiTitle: "Materi 2: Hadis Menghormati Perbedaan",
+    question: "Teman lupa membawa bekal makanan. Apa perilaku terpuji yang kamu lakukan?",
+    mainVisual: "share_food",
+    options: [
+      { label: "Mengejek teman", visual: "mock_or_fight" },
+      { label: "Berbagi makanan bersama", visual: "share_food" },
+      { label: "Menjauhi teman", visual: "exclude_friend" },
+      { label: "Marah kepada teman", visual: "angry_cry_giveup" }
+    ],
+    answer: 1
+  },
+  {
+    id: 17, materi: 2, materiTitle: "Materi 2: Hadis Menghormati Perbedaan",
+    question: "Mana perilaku buruk yang dilarang oleh Nabi Muhammad saw.?",
+    mainVisual: "mock_or_fight",
+    options: [
+      { label: "Berbagi bekal", visual: "share_food" },
+      { label: "Menolong teman jatuh", visual: "help_fallen" },
+      { label: "Mengejek dan menyakiti teman", visual: "mock_or_fight" },
+      { label: "Menyapa ramah", visual: "greet_polite" }
+    ],
+    answer: 2
+  },
+  {
+    id: 18, materi: 2, materiTitle: "Materi 2: Hadis Menghormati Perbedaan",
+    question: "Jika bertemu teman di halaman sekolah, kita bersikap ramah dengan cara?",
+    mainVisual: "greet_polite",
+    options: [
+      { label: "Mengucilkan teman", visual: "exclude_friend" },
+      { label: "Menertawakan teman", visual: "laugh_at_fallen" },
+      { label: "Memukul meja", visual: "angry_cry_giveup" },
+      { label: "Tersenyum dan memberi salam", visual: "greet_polite" }
+    ],
+    answer: 3
+  },
+  {
+    id: 19, materi: 2, materiTitle: "Materi 2: Hadis Menghormati Perbedaan",
+    question: "Teman kita memiliki perbedaan warna kulit dan bahasa. Sikap kita adalah?",
+    mainVisual: "play_together_diverse",
+    options: [
+      { label: "Tetap menyayangi dan bermain bersama", visual: "play_together_diverse" },
+      { label: "Tidak mau berteman", visual: "exclude_friend" },
+      { label: "Mengejek bahasanya", visual: "mock_or_fight" },
+      { label: "Berteriak", visual: "disturb_friend" }
+    ],
+    answer: 0
+  },
+  {
+    id: 20, materi: 2, materiTitle: "Materi 2: Hadis Menghormati Perbedaan",
+    question: "Mana gambar anak yang saling menyayangi dan tolong-menolong?",
+    mainVisual: "help_wheelchair",
+    options: [
+      { label: "Menertawakan teman", visual: "laugh_at_fallen" },
+      { label: "Membantu teman dengan tulus", visual: "help_wheelchair" },
+      { label: "Mengucilkan teman", visual: "exclude_friend" },
+      { label: "Bertengkar", visual: "mock_or_fight" }
+    ],
+    answer: 1
+  },
+
+  // ==================== MATERI 3: IMAN KEPADA QADA DAN QADAR (10 SOAL) ====================
+  {
+    id: 21, materi: 3, materiTitle: "Materi 3: Iman Kepada Qada dan Qadar",
+    question: "Sebelum belajar dan ujian, apa yang harus dilakukan anak Muslim?",
+    mainVisual: "pray_before_exam",
+    options: [
+      { label: "Berdoa kepada Allah Swt.", visual: "pray_before_exam" },
+      { label: "Tidur di kelas", visual: "sleep_class" },
+      { label: "Bermain game terus", visual: "play_game_lazy" },
+      { label: "Marah-marah", visual: "angry_cry_giveup" }
+    ],
+    answer: 0
+  },
+  {
+    id: 22, materi: 3, materiTitle: "Materi 3: Iman Kepada Qada dan Qadar",
+    question: "Agar mendapat nilai bagus atas izin Allah, kita harus berusaha dengan cara?",
+    mainVisual: "study_hard",
+    options: [
+      { label: "Malas bermain game", visual: "play_game_lazy" },
+      { label: "Rajin belajar dan membaca buku", visual: "study_hard" },
+      { label: "Tidur saat pelajaran", visual: "sleep_class" },
+      { label: "Menangis menyerah", visual: "angry_cry_giveup" }
+    ],
+    answer: 1
+  },
+  {
+    id: 23, materi: 3, materiTitle: "Materi 3: Iman Kepada Qada dan Qadar",
+    question: "Ketika mendapatkan hadiah atau nilai bagus, kita mengucapkan Alhamdulillah dan?",
+    mainVisual: "grateful_trophy",
+    options: [
+      { label: "Mengejek teman", visual: "mock_or_fight" },
+      { label: "Marah dan menangis", visual: "angry_cry_giveup" },
+      { label: "Bersyukur kepada Allah Swt.", visual: "grateful_trophy" },
+      { label: "Membuang sampah sembarangan", visual: "litter_floor" }
+    ],
+    answer: 2
+  },
+  {
+    id: 24, materi: 3, materiTitle: "Materi 3: Iman Kepada Qada dan Qadar",
+    question: "Jika belum menang lomba, sikap anak yang beriman kepada takdir Allah adalah?",
+    mainVisual: "patient_try_again",
+    options: [
+      { label: "Menangis dan marah", visual: "angry_cry_giveup" },
+      { label: "Menyalahkan teman", visual: "mock_or_fight" },
+      { label: "Berhenti belajar", visual: "sleep_class" },
+      { label: "Sabar dan tetap semangat mencoba", visual: "patient_try_again" }
+    ],
+    answer: 3
+  },
+  {
+    id: 25, materi: 3, materiTitle: "Materi 3: Iman Kepada Qada dan Qadar",
+    question: "Anak terjatuh saat bermain sepeda, lalu ia bangkit kembali dengan sabar. Mana gambarnya?",
+    mainVisual: "patient_try_again",
+    options: [
+      { label: "Bangkit lagi dan tetap semangat", visual: "patient_try_again" },
+      { label: "Marah dan mengamuk", visual: "angry_cry_giveup" },
+      { label: "Menyalahkan teman", visual: "mock_or_fight" },
+      { label: "Merusak tanaman", visual: "stomp_plants" }
+    ],
+    answer: 0
+  },
+  {
+    id: 26, materi: 3, materiTitle: "Materi 3: Iman Kepada Qada dan Qadar",
+    question: "Segala sesuatu terjadi atas ketetapan Allah. Karena itu kita selalu berdoa dan?",
+    mainVisual: "study_hard",
+    options: [
+      { label: "Bermain game saja", visual: "play_game_lazy" },
+      { label: "Berusaha sungguh-sungguh", visual: "study_hard" },
+      { label: "Tidur terus", visual: "sleep_class" },
+      { label: "Menyerah", visual: "angry_cry_giveup" }
+    ],
+    answer: 1
+  },
+  {
+    id: 27, materi: 3, materiTitle: "Materi 3: Iman Kepada Qada dan Qadar",
+    question: "Mana perilaku yang TIDAK sabar dan mudah menyerah?",
+    mainVisual: "angry_cry_giveup",
+    options: [
+      { label: "Rajin belajar", visual: "study_hard" },
+      { label: "Berdoa kepada Allah", visual: "pray_before_exam" },
+      { label: "Marah dan menangis putus asa", visual: "angry_cry_giveup" },
+      { label: "Bersyukur", visual: "grateful_trophy" }
+    ],
+    answer: 2
+  },
+  {
+    id: 28, materi: 3, materiTitle: "Materi 3: Iman Kepada Qada dan Qadar",
+    question: "Setelah rajin belajar dan berdoa, kita menyerahkan hasilnya kepada?",
+    mainVisual: "pray_before_exam",
+    options: [
+      { label: "Game online", visual: "play_game_lazy" },
+      { label: "Tidur pulas", visual: "sleep_class" },
+      { label: "Kemarahan", visual: "angry_cry_giveup" },
+      { label: "Ketetapan Allah Swt.", visual: "pray_before_exam" }
+    ],
+    answer: 3
+  },
+  {
+    id: 29, materi: 3, materiTitle: "Materi 3: Iman Kepada Qada dan Qadar",
+    question: "Teman mendapatkan juara kelas. Kita ikut senang dan bersyukur. Mana gambarnya?",
+    mainVisual: "grateful_trophy",
+    options: [
+      { label: "Senang dan bersyukur", visual: "grateful_trophy" },
+      { label: "Mengejek juara", visual: "mock_or_fight" },
+      { label: "Mengucilkan teman", visual: "exclude_friend" },
+      { label: "Marah-marah", visual: "angry_cry_giveup" }
+    ],
+    answer: 0
+  },
+  {
+    id: 30, materi: 3, materiTitle: "Materi 3: Iman Kepada Qada dan Qadar",
+    question: "Meskipun tugas sekolah terasa sulit, anak yang hebat akan?",
+    mainVisual: "study_hard",
+    options: [
+      { label: "Mencoret dinding", visual: "scribble_wall" },
+      { label: "Tetap semangat belajar", visual: "study_hard" },
+      { label: "Tidur di meja", visual: "sleep_class" },
+      { label: "Menangis marah", visual: "angry_cry_giveup" }
+    ],
+    answer: 1
+  },
+
+  // ==================== MATERI 4: PEDULI LINGKUNGAN SEKOLAH (10 SOAL) ====================
+  {
+    id: 31, materi: 4, materiTitle: "Materi 4: Peduli Lingkungan Sekolah",
+    question: "Mana anak yang membuang sampah pada tempatnya?",
+    mainVisual: "trash_in_bin",
+    options: [
+      { label: "Buang ke tempat sampah", visual: "trash_in_bin" },
+      { label: "Buang ke lantai", visual: "litter_floor" },
+      { label: "Buang ke selokan", visual: "litter_gutter" },
+      { label: "Mencoret dinding", visual: "scribble_wall" }
+    ],
+    answer: 0
+  },
+  {
+    id: 32, materi: 4, materiTitle: "Materi 4: Peduli Lingkungan Sekolah",
+    question: "Lantai ruang kelas terlihat berdebu. Apa yang harus kita lakukan?",
+    mainVisual: "sweep_floor",
+    options: [
+      { label: "Membuang sampah di lantai", visual: "litter_floor" },
+      { label: "Menyapu lantai hingga bersih", visual: "sweep_floor" },
+      { label: "Mencoret-coret dinding", visual: "scribble_wall" },
+      { label: "Tidur di kelas", visual: "sleep_class" }
+    ],
+    answer: 1
+  },
+  {
+    id: 33, materi: 4, materiTitle: "Materi 4: Peduli Lingkungan Sekolah",
+    question: "Agar bunga dan tanaman di taman sekolah tumbuh subur, kita harus?",
+    mainVisual: "water_plants",
+    options: [
+      { label: "Menginjak tanaman", visual: "stomp_plants" },
+      { label: "Buang sampah ke selokan", visual: "litter_gutter" },
+      { label: "Menyiram tanaman secara teratur", visual: "water_plants" },
+      { label: "Mencoret dinding sekolah", visual: "scribble_wall" }
+    ],
+    answer: 2
+  },
+  {
+    id: 34, materi: 4, materiTitle: "Materi 4: Peduli Lingkungan Sekolah",
+    question: "Sebelum pulang sekolah, bagaimana cara menjaga kerapian ruang kelas?",
+    mainVisual: "tidy_desk",
+    options: [
+      { label: "Membiarkan sampah berserakan", visual: "litter_floor" },
+      { label: "Merusak bunga", visual: "stomp_plants" },
+      { label: "Mencoret tembok", visual: "scribble_wall" },
+      { label: "Merapikan meja dan kursi", visual: "tidy_desk" }
+    ],
+    answer: 3
+  },
+  {
+    id: 35, materi: 4, materiTitle: "Materi 4: Peduli Lingkungan Sekolah",
+    question: "Setelah menggunakan toilet sekolah, apa yang wajib kita lakukan?",
+    mainVisual: "clean_toilet",
+    options: [
+      { label: "Menyiram toilet sampai bersih", visual: "clean_toilet" },
+      { label: "Membuang sampah ke selokan", visual: "litter_gutter" },
+      { label: "Mencoret pintu toilet", visual: "scribble_wall" },
+      { label: "Membuang sampah ke lantai", visual: "litter_floor" }
+    ],
+    answer: 0
+  },
+  {
+    id: 36, materi: 4, materiTitle: "Materi 4: Peduli Lingkungan Sekolah",
+    question: "Mana perilaku yang MERUSAK kebersihan dan keindahan sekolah?",
+    mainVisual: "scribble_wall",
+    options: [
+      { label: "Menyapu kelas", visual: "sweep_floor" },
+      { label: "Mencoret-coret dinding sekolah", visual: "scribble_wall" },
+      { label: "Menyiram bunga", visual: "water_plants" },
+      { label: "Merapikan meja", visual: "tidy_desk" }
+    ],
+    answer: 1
+  },
+  {
+    id: 37, materi: 4, materiTitle: "Materi 4: Peduli Lingkungan Sekolah",
+    question: "Hari ini jadwal piket kelasmu. Mana gambar melaksanakan piket bersama teman?",
+    mainVisual: "class_picket_team",
+    options: [
+      { label: "Bermain game sendiri", visual: "play_game_lazy" },
+      { label: "Membuang sampah sembarangan", visual: "litter_floor" },
+      { label: "Bekerja sama piket kelas", visual: "class_picket_team" },
+      { label: "Menginjak tanaman", visual: "stomp_plants" }
+    ],
+    answer: 2
+  },
+  {
+    id: 38, materi: 4, materiTitle: "Materi 4: Peduli Lingkungan Sekolah",
+    question: "Selokan air sekolah tidak boleh tersumbat banjir. Jangan membuang sampah ke?",
+    mainVisual: "trash_in_bin",
+    options: [
+      { label: "Tong sampah hijau", visual: "trash_in_bin" },
+      { label: "Menyapu halaman", visual: "sweep_floor" },
+      { label: "Menyiram taman", visual: "water_plants" },
+      { label: "Jangan buang ke selokan", visual: "litter_gutter" }
+    ],
+    answer: 3
+  },
+  {
+    id: 39, materi: 4, materiTitle: "Materi 4: Peduli Lingkungan Sekolah",
+    question: "Tanaman di sekolah adalah ciptaan Allah. Kita menjaganya dengan tidak?",
+    mainVisual: "water_plants",
+    options: [
+      { label: "Tidak merusak tanaman", visual: "water_plants" },
+      { label: "Menginjak-injak bunga", visual: "stomp_plants" },
+      { label: "Mencoret dinding", visual: "scribble_wall" },
+      { label: "Buang sampah di lantai", visual: "litter_floor" }
+    ],
+    answer: 0
+  },
+  {
+    id: 40, materi: 4, materiTitle: "Materi 4: Peduli Lingkungan Sekolah",
+    question: "Kebersihan adalah sebagian dari iman. Mana gambar lingkungan sekolah yang bersih dan sehat?",
+    mainVisual: "class_picket_team",
+    options: [
+      { label: "Sampah berserakan", visual: "litter_floor" },
+      { label: "Kelas bersih dirawat bersama", visual: "class_picket_team" },
+      { label: "Tembok penuh coretan", visual: "scribble_wall" },
+      { label: "Selokan penuh sampah", visual: "litter_gutter" }
+    ],
+    answer: 1
+  }
+];
+
+/**
+ * ============================================================================
+ * 3. STATE APLIKASI & PENYIMPANAN LOCALSTORAGE
+ * ============================================================================
+ */
+let state = {
+  screen: 'home', // 'home' | 'quiz' | 'result'
+  studentName: '',
+  selectedMode: 'all', // 'all' (40 soal) atau 1, 2, 3, 4 (10 soal per materi)
+  activeQuestions: [],
+  currentIndex: 0,
+  firstAttemptCorrect: 0,
+  wrongAttempts: 0,
+  answeredCurrent: false,
+  hadMistakeOnCurrent: false,
+  pendingAction: null
+};
+
+const STORAGE_KEY = 'pai_slb_fase_c_records_v1';
+
+function getSavedRecords() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveRecord(record) {
+  try {
+    const list = getSavedRecords();
+    list.unshift(record);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  } catch (e) {
+    console.warn('Penyimpanan lokal penuh atau dibatasi.');
+  }
+}
+
+/**
+ * ============================================================================
+ * 4. AUDIO ENGINE: TEXT-TO-SPEECH (BAHASA INDONESIA) & EFEK SUARA CERIA
+ * ============================================================================
+ */
+let audioCtx = null;
+
+function playTone(type) {
+  try {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    if (type === 'correct') {
+      // Melodi naik ceria (Do - Mi - Sol - Do')
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.setValueAtTime(659.25, now + 0.1);
+      osc.frequency.setValueAtTime(783.99, now + 0.2);
+      osc.frequency.setValueAtTime(1046.50, now + 0.3);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.55);
+      osc.start(now);
+      osc.stop(now + 0.55);
+    } else if (type === 'encourage') {
+      // Nada lembut ramah (tidak menakutkan)
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.setValueAtTime(392, now + 0.15);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+      osc.start(now);
+      osc.stop(now + 0.35);
+    } else if (type === 'click') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600, now);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    }
+  } catch (e) {}
+}
+
+function speakText(text) {
+  try {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'id-ID';
+    utter.rate = 0.88; // Sedikit lebih lambat agar sangat jelas bagi siswa SLB
+    utter.pitch = 1.08; // Nada ramah & ceria
+    window.speechSynthesis.speak(utter);
+  } catch (e) {}
+}
+
+function speakCurrentQuestion() {
+  const q = state.activeQuestions[state.currentIndex];
+  if (!q) return;
+  const letters = ['A', 'B', 'C', 'D'];
+  let fullSpeech = `${q.question}. `;
+  q.options.forEach((opt, idx) => {
+    fullSpeech += `Pilihan ${letters[idx]}: ${opt.label}. `;
+  });
+  speakText(fullSpeech);
+}
+
+function speakGuide() {
+  speakText("Cara bermain kuis. Pertama, dengarkan suara soal. Kedua, lihat gambar kegiatan anak yang baik. Ketiga, sentuh gambar jawaban A, B, C, atau D yang benar.");
+}
+
+/**
+ * ============================================================================
+ * 5. ANIMASI KONFETI BINTANG SAAT JAWABAN BENAR
+ * ============================================================================
+ */
+function launchConfetti() {
+  const colors = ['#FACC15', '#22C55E', '#3B82F6', '#EC4899', '#A855F7', '#F97316'];
+  for (let i = 0; i < 36; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    el.style.animationDelay = (Math.random() * 0.35) + 's';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2200);
+  }
+}
+
+/**
+ * ============================================================================
+ * 6. RENDER HALAMAN PEMBUKA, HALAMAN SOAL, DAN HALAMAN HASIL
+ * ============================================================================
+ */
+function renderApp() {
+  const container = document.getElementById('app-container');
+  if (state.screen === 'home') {
+    container.innerHTML = renderHomeScreen();
+  } else if (state.screen === 'quiz') {
+    container.innerHTML = renderQuizScreen();
+    // Bacakan pertanyaan secara otomatis setelah jeda singkat
+    setTimeout(() => {
+      const q = state.activeQuestions[state.currentIndex];
+      if (q) speakText(q.question);
+    }, 350);
+  } else if (state.screen === 'result') {
+    container.innerHTML = renderResultScreen();
+    launchConfetti();
+    const score = Math.round((state.firstAttemptCorrect / state.activeQuestions.length) * 100);
+    setTimeout(() => {
+      speakText(`Selamat ${state.studentName || 'Anak Hebat'}! Kamu telah menyelesaikan kuis dengan nilai ${score}. Hebat sekali!`);
+    }, 400);
+  }
+}
+
+function renderHomeScreen() {
+  return `
+    <div class="bg-white/95 border-4 border-amber-400 rounded-3xl p-5 sm:p-8 shadow-xl text-center max-w-4xl mx-auto w-full">
+      <!-- Ilustrasi Anak Belajar Ceria -->
+      <div class="flex justify-center items-center gap-3 mb-3">
+        <span class="text-5xl sm:text-6xl">👧🏽</span>
+        <div class="bg-emerald-100 border-4 border-emerald-400 rounded-3xl px-5 py-2">
+          <span class="text-4xl sm:text-5xl">📖✨</span>
+        </div>
+        <span class="text-5xl sm:text-6xl">👦🏽</span>
+      </div>
+
+      <h1 class="font-display text-2xl sm:text-4xl md:text-5xl font-bold text-teal-800 leading-tight">
+        KUIS INTERAKTIF PAI DAN BUDI PEKERTI
+      </h1>
+      <div class="inline-block bg-amber-300 text-amber-950 font-display font-bold text-lg sm:text-2xl px-6 py-1.5 rounded-full mt-2 mb-5 shadow-xs">
+        🌟 BELAJAR SAMBIL BERMAIN • SLB FASE C 🌟
+      </div>
+
+      <!-- Input Nama Peserta Didik (Opsional / Dibantu Guru) -->
+      <div class="max-w-md mx-auto mb-5 bg-sky-50 border-3 border-sky-300 rounded-2xl p-3 sm:p-4">
+        <label for="student-name-input" class="block font-extrabold text-sky-900 text-base sm:text-lg mb-1.5">
+          ✏️ NAMA PESERTA DIDIK:
+        </label>
+        <input id="student-name-input" type="text" value="${state.studentName}" 
+          oninput="state.studentName = this.value"
+          placeholder="Ketik nama siswa di sini..."
+          class="w-full text-center font-extrabold text-lg sm:text-xl py-2.5 px-4 rounded-xl border-2 border-sky-400 focus:outline-none focus:border-teal-600 bg-white text-slate-800" />
+      </div>
+
+      <!-- Pilihan Materi Pembelajaran -->
+      <div class="mb-6">
+        <p class="font-extrabold text-slate-700 text-base sm:text-lg mb-3">📚 PILIH MATERI BELAJAR:</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+          <button onclick="selectMode('all')" class="p-3 rounded-2xl border-3 font-extrabold text-sm sm:text-base transition ${state.selectedMode === 'all' ? 'bg-teal-600 text-white border-teal-800 scale-105 shadow-md' : 'bg-slate-100 text-slate-700 border-slate-300'}">
+            🌈 SEMUA MATERI<br><span class="text-xs font-bold">(40 Soal)</span>
+          </button>
+          <button onclick="selectMode(1)" class="p-3 rounded-2xl border-3 font-extrabold text-sm sm:text-base transition ${state.selectedMode === 1 ? 'bg-emerald-600 text-white border-emerald-800 scale-105 shadow-md' : 'bg-emerald-50 text-emerald-900 border-emerald-300'}">
+            🕌 1. QS. Al-Kafirun<br><span class="text-xs font-bold">(10 Soal)</span>
+          </button>
+          <button onclick="selectMode(2)" class="p-3 rounded-2xl border-3 font-extrabold text-sm sm:text-base transition ${state.selectedMode === 2 ? 'bg-sky-600 text-white border-sky-800 scale-105 shadow-md' : 'bg-sky-50 text-sky-900 border-sky-300'}">
+            🤝 2. Menghormati Teman<br><span class="text-xs font-bold">(10 Soal)</span>
+          </button>
+          <button onclick="selectMode(3)" class="p-3 rounded-2xl border-3 font-extrabold text-sm sm:text-base transition ${state.selectedMode === 3 ? 'bg-amber-500 text-white border-amber-700 scale-105 shadow-md' : 'bg-amber-50 text-amber-900 border-amber-300'}">
+            🤲 3. Qada & Qadar<br><span class="text-xs font-bold">(10 Soal)</span>
+          </button>
+          <button onclick="selectMode(4)" class="p-3 rounded-2xl border-3 font-extrabold text-sm sm:text-base transition ${state.selectedMode === 4 ? 'bg-lime-600 text-white border-lime-800 scale-105 shadow-md' : 'bg-lime-50 text-lime-900 border-lime-300'}">
+            🌱 4. Peduli Lingkungan<br><span class="text-xs font-bold">(10 Soal)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tombol Utama Besar -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <button onclick="startQuiz()" class="btn-3d w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 border-4 border-emerald-700 text-white px-10 py-4 sm:py-5 rounded-3xl font-display text-2xl sm:text-3xl font-bold flex items-center justify-center gap-3">
+          <span>▶️</span> MULAI BELAJAR
+        </button>
+        <button onclick="openGuideModal()" class="btn-3d w-full sm:w-auto bg-amber-400 hover:bg-amber-500 border-4 border-amber-600 text-amber-950 px-8 py-4 sm:py-5 rounded-3xl font-display text-xl sm:text-2xl font-bold flex items-center justify-center gap-2">
+          <span>💡</span> PETUNJUK
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderQuizScreen() {
+  const q = state.activeQuestions[state.currentIndex];
+  const total = state.activeQuestions.length;
+  const currentNum = state.currentIndex + 1;
+  const progressPct = Math.round((currentNum / total) * 100);
+  const letters = ['A', 'B', 'C', 'D'];
+  const badgeColors = ['bg-rose-500', 'bg-sky-500', 'bg-amber-500', 'bg-purple-500'];
+
+  return `
+    <div class="w-full max-w-4xl mx-auto">
+      <!-- Baris Kemajuan & Identitas Materi -->
+      <div class="bg-white/90 border-3 border-teal-300 rounded-2xl p-3 mb-3 shadow-xs">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+          <span class="bg-teal-100 text-teal-900 px-3 py-1 rounded-xl font-extrabold text-xs sm:text-sm">
+            ${q.materiTitle}
+          </span>
+          <span class="bg-amber-200 text-amber-950 px-4 py-1 rounded-xl font-display font-bold text-base sm:text-lg">
+            SOAL ${currentNum} DARI ${total}
+          </span>
+        </div>
+        <div class="w-full bg-slate-200 h-4 rounded-full overflow-hidden border border-slate-300">
+          <div class="bg-gradient-to-r from-emerald-400 to-teal-500 h-full transition-all duration-300" style="width: ${progressPct}%"></div>
+        </div>
+      </div>
+
+      <!-- Kartu Pertanyaan Utama dengan Gambar Besar & Tombol Audio -->
+      <div class="bg-white border-4 border-sky-400 rounded-3xl p-4 sm:p-6 mb-4 shadow-md flex flex-col md:flex-row items-center gap-4">
+        <div class="flex-shrink-0 bg-sky-50 p-2 rounded-2xl border-2 border-sky-200">
+          ${renderIllustration(q.mainVisual, 'lg')}
+        </div>
+        <div class="flex-grow text-center md:text-left">
+          <h2 class="font-display text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 leading-snug mb-4">
+            ${q.question}
+          </h2>
+          <div class="flex flex-wrap justify-center md:justify-start gap-3">
+            <button onclick="speakText('${q.question.replace(/'/g, "\\'")}')" class="btn-3d speaker-pulse bg-sky-500 hover:bg-sky-600 border-4 border-sky-700 text-white px-5 py-3 rounded-2xl font-extrabold text-base sm:text-lg flex items-center gap-2">
+              <span class="text-2xl">🔊</span> ULANGI SUARA SOAL
+            </button>
+            <button onclick="speakCurrentQuestion()" class="btn-3d bg-indigo-500 hover:bg-indigo-600 border-4 border-indigo-700 text-white px-4 py-3 rounded-2xl font-extrabold text-sm sm:text-base flex items-center gap-2">
+              <span class="text-xl">🎧</span> BACA SEMUA PILIHAN
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Pilihan Jawaban Bergambar Besar (A, B, C, D) -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4">
+        ${q.options.map((opt, idx) => `
+          <div id="choice-card-${idx}" onclick="selectAnswer(${idx})" 
+            class="card-choice cursor-pointer bg-white border-4 border-slate-300 rounded-3xl p-3 flex flex-col items-center justify-between relative">
+            
+            <!-- Header Kartu: Huruf A/B/C/D & Tombol Dengar Label Gambar -->
+            <div class="w-full flex items-center justify-between mb-1">
+              <span class="${badgeColors[idx]} text-white font-display font-bold text-xl sm:text-2xl w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center shadow-xs">
+                ${letters[idx]}
+              </span>
+              <button type="button" onclick="event.stopPropagation(); speakText('Pilihan ${letters[idx]}: ${opt.label.replace(/'/g, "\\'")}')" 
+                title="Dengar keterangan gambar"
+                class="bg-sky-100 hover:bg-sky-200 border-2 border-sky-400 text-sky-800 w-10 h-10 rounded-xl flex items-center justify-center text-lg">
+                🔊
+              </button>
+            </div>
+
+            <!-- Gambar Utama Pilihan Jawaban -->
+            <div class="my-1">
+              ${renderIllustration(opt.visual, 'md')}
+            </div>
+
+            <!-- Label Teks Singkat Pendamping Gambar -->
+            <p class="text-center font-extrabold text-slate-800 text-sm sm:text-base leading-tight mt-1">
+              ${opt.label}
+            </p>
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- Tombol Navigasi Bawah -->
+      <div class="flex items-center justify-between gap-3">
+        <button onclick="prevQuestion()" ${state.currentIndex === 0 ? 'disabled' : ''} 
+          class="btn-3d px-5 py-3 rounded-2xl font-extrabold text-base border-4 ${state.currentIndex === 0 ? 'bg-slate-200 border-slate-300 text-slate-400 cursor-not-allowed' : 'bg-white border-slate-400 text-slate-700'}">
+          ⬅️ SEBELUMNYA
+        </button>
+
+        <button onclick="nextQuestion()" 
+          class="btn-3d bg-amber-400 hover:bg-amber-500 border-4 border-amber-600 text-amber-950 px-6 py-3 rounded-2xl font-extrabold text-base sm:text-lg flex items-center gap-2">
+          <span>${state.currentIndex === total - 1 ? 'LIHAT HASIL 🏆' : 'SOAL BERIKUTNYA ➡️'}</span>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderResultScreen() {
+  const total = state.activeQuestions.length;
+  const correct = state.firstAttemptCorrect;
+  const wrong = total - correct;
+  const score = Math.round((correct / total) * 100);
+
+  let stars = '⭐⭐⭐';
+  let motivation = 'Luar biasa! Kamu anak hebat dan shalih!';
+  if (score >= 85) {
+    stars = '⭐⭐⭐⭐⭐';
+    motivation = 'MasyaAllah! Hebat sekali! Kamu memahami pelajaran dengan sangat baik!';
+  } else if (score >= 65) {
+    stars = '⭐⭐⭐⭐';
+    motivation = 'Bagus sekali! Terus semangat belajar dan berbuat baik ya!';
+  } else {
+    stars = '⭐⭐⭐';
+    motivation = 'Hebat sudah berusaha sampai selesai! Ayo berlatih lagi bersama guru!';
+  }
+
+  return `
+    <div class="bg-white/95 border-4 border-emerald-400 rounded-3xl p-6 sm:p-8 shadow-2xl text-center max-w-2xl mx-auto w-full">
+      <div class="text-4xl sm:text-5xl mb-2">${stars}</div>
+      <h2 class="font-display text-3xl sm:text-4xl font-bold text-emerald-700 mb-1">
+        SELAMAT, ${state.studentName ? state.studentName.toUpperCase() : 'ANAK HEBAT'}!
+      </h2>
+      <p class="text-base sm:text-lg font-extrabold text-slate-600 mb-5">${motivation}</p>
+
+      <!-- Kartu Skor Besar -->
+      <div class="bg-gradient-to-br from-amber-100 to-yellow-200 border-4 border-amber-400 rounded-3xl p-5 mb-5">
+        <p class="font-extrabold text-amber-900 text-sm sm:text-base">NILAI AKHIR KAMU</p>
+        <p class="font-display text-6xl sm:text-7xl font-bold text-amber-600 my-1">${score}</p>
+        <p class="font-extrabold text-amber-900 text-base">Persentase Keberhasilan: ${score}%</p>
+      </div>
+
+      <!-- Rincian Benar & Salah -->
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="bg-emerald-50 border-3 border-emerald-400 rounded-2xl p-4">
+          <div class="text-3xl mb-1">✅</div>
+          <p class="font-extrabold text-emerald-800 text-sm">JAWABAN BENAR</p>
+          <p class="font-display text-3xl font-bold text-emerald-600">${correct}</p>
+        </div>
+        <div class="bg-amber-50 border-3 border-amber-400 rounded-2xl p-4">
+          <div class="text-3xl mb-1">🔄</div>
+          <p class="font-extrabold text-amber-800 text-sm">PERLU LATIHAN</p>
+          <p class="font-display text-3xl font-bold text-amber-600">${wrong}</p>
+        </div>
+      </div>
+
+      <!-- Tombol Ulangi & Menu -->
+      <div class="flex flex-col sm:flex-row justify-center gap-4">
+        <button onclick="startQuiz()" class="btn-3d bg-emerald-500 hover:bg-emerald-600 border-4 border-emerald-700 text-white px-8 py-4 rounded-2xl font-display text-xl sm:text-2xl font-bold">
+          🔄 ULANGI KUIS
+        </button>
+        <button onclick="goHome()" class="btn-3d bg-sky-500 hover:bg-sky-600 border-4 border-sky-700 text-white px-8 py-4 rounded-2xl font-display text-xl sm:text-2xl font-bold">
+          🏠 KEMBALI KE MENU
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * ============================================================================
+ * 7. LOGIKA INTERAKSI KUIS & UMPAN BALIK POSITIF RAMAH SLB
+ * ============================================================================
+ */
+function selectMode(mode) {
+  playTone('click');
+  state.selectedMode = mode;
+  renderApp();
+}
+
+function startQuiz() {
+  playTone('click');
+  if (state.selectedMode === 'all') {
+    state.activeQuestions = [...QUIZ_DATA];
+  } else {
+    state.activeQuestions = QUIZ_DATA.filter(q => q.materi === state.selectedMode);
+  }
+  state.currentIndex = 0;
+  state.firstAttemptCorrect = 0;
+  state.wrongAttempts = 0;
+  state.answeredCurrent = false;
+  state.hadMistakeOnCurrent = false;
+  state.screen = 'quiz';
+  renderApp();
+}
+
+function goHome() {
+  playTone('click');
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  state.screen = 'home';
+  renderApp();
+}
+
+function selectAnswer(optionIdx) {
+  const q = state.activeQuestions[state.currentIndex];
+  const cardEl = document.getElementById(`choice-card-${optionIdx}`);
+  if (!q || !cardEl) return;
+
+  if (optionIdx === q.answer) {
+    // JAWABAN BENAR
+    playTone('correct');
+    launchConfetti();
+    cardEl.classList.add('card-correct');
+
+    if (!state.answeredCurrent) {
+      state.answeredCurrent = true;
+      if (!state.hadMistakeOnCurrent) {
+        state.firstAttemptCorrect++;
+      }
+    }
+
+    speakText("Hebat! Jawaban kamu benar!");
+    showFeedbackModal(
+      true,
+      "🌟",
+      "HEBAT!",
+      "Jawaban kamu benar!",
+      state.currentIndex === state.activeQuestions.length - 1 ? "LIHAT HASIL 🏆" : "SOAL BERIKUTNYA ➡️",
+      () => nextQuestion()
+    );
+  } else {
+    // JAWABAN SALAH -> RAMAH, TANPA HUKUMAN, BERI KESEMPATAN COBA LAGI
+    playTone('encourage');
+    cardEl.classList.add('card-wrong');
+    state.hadMistakeOnCurrent = true;
+    state.wrongAttempts++;
+
+    speakText("Tidak apa-apa, ayo coba lagi!");
+    showFeedbackModal(
+      false,
+      "🤗",
+      "AYO COBA LAGI!",
+      "Tidak apa-apa, perhatikan gambarnya dan coba pilih lagi ya!",
+      "COBA LAGI 💪",
+      () => {
+        cardEl.classList.remove('card-wrong');
+      }
+    );
+  }
+}
+
+function showFeedbackModal(isCorrect, emoji, title, desc, btnText, actionFn) {
+  const modal = document.getElementById('feedback-modal');
+  const box = document.getElementById('feedback-box');
+  document.getElementById('feedback-emoji').textContent = emoji;
+  document.getElementById('feedback-title').textContent = title;
+  document.getElementById('feedback-desc').textContent = desc;
+  const btn = document.getElementById('feedback-btn');
+  btn.textContent = btnText;
+
+  if (isCorrect) {
+    box.className = "bg-white border-8 border-emerald-400 rounded-3xl max-w-md w-full p-6 sm:p-8 text-center shadow-2xl";
+    document.getElementById('feedback-title').className = "font-display text-3xl font-bold text-emerald-600 mb-2";
+    btn.className = "btn-3d w-full bg-emerald-500 border-4 border-emerald-700 text-white py-4 rounded-2xl font-display text-2xl font-bold";
+  } else {
+    box.className = "bg-white border-8 border-amber-400 rounded-3xl max-w-md w-full p-6 sm:p-8 text-center shadow-2xl";
+    document.getElementById('feedback-title').className = "font-display text-3xl font-bold text-amber-600 mb-2";
+    btn.className = "btn-3d w-full bg-amber-400 border-4 border-amber-600 text-amber-950 py-4 rounded-2xl font-display text-2xl font-bold";
+  }
+
+  state.pendingAction = actionFn;
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function handleFeedbackAction() {
+  const modal = document.getElementById('feedback-modal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+  if (typeof state.pendingAction === 'function') {
+    state.pendingAction();
+    state.pendingAction = null;
+  }
+}
+
+function nextQuestion() {
+  playTone('click');
+  if (state.currentIndex < state.activeQuestions.length - 1) {
+    state.currentIndex++;
+    state.answeredCurrent = false;
+    state.hadMistakeOnCurrent = false;
+    renderApp();
+  } else {
+    finishQuiz();
+  }
+}
+
+function prevQuestion() {
+  playTone('click');
+  if (state.currentIndex > 0) {
+    state.currentIndex--;
+    state.answeredCurrent = false;
+    state.hadMistakeOnCurrent = false;
+    renderApp();
+  }
+}
+
+function finishQuiz() {
+  const total = state.activeQuestions.length;
+  const correct = state.firstAttemptCorrect;
+  const wrong = total - correct;
+  const score = Math.round((correct / total) * 100);
+
+  let note = "Perlu pendampingan visual & pengulangan audio";
+  if (score >= 85) note = "Sangat Mandiri & Memahami Materi dengan Baik";
+  else if (score >= 65) note = "Mampu Memahami Materi dengan Bantuan Gambar";
+
+  const modeLabels = {
+    'all': 'Semua Materi (40 Soal)',
+    1: 'Materi 1: QS. Al-Kafirun',
+    2: 'Materi 2: Hadis Menghormati Perbedaan',
+    3: 'Materi 3: Iman Qada & Qadar',
+    4: 'Materi 4: Peduli Lingkungan'
+  };
+
+  saveRecord({
+    name: state.studentName.trim() || 'Peserta Didik SLB',
+    mode: modeLabels[state.selectedMode] || 'Kuis PAI',
+    correct: correct,
+    wrong: wrong,
+    total: total,
+    score: score,
+    note: note,
+    date: new Date().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })
+  });
+
+  state.screen = 'result';
+  renderApp();
+}
+
+/**
+ * ============================================================================
+ * 8. MODAL PETUNJUK & MENU GURU (REKAP, KUNCI, UNDUH WORD .DOC & GOOGLE DOCS)
+ * ============================================================================
+ */
+function openGuideModal() {
+  playTone('click');
+  const m = document.getElementById('guide-modal');
+  m.classList.remove('hidden');
+  m.classList.add('flex');
+  speakGuide();
+}
+
+function closeGuideModal() {
+  playTone('click');
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  const m = document.getElementById('guide-modal');
+  m.classList.add('hidden');
+  m.classList.remove('flex');
+}
+
+function openTeacherModal() {
+  playTone('click');
+  renderRekapTable();
+  renderAnswerKeyList();
+  const m = document.getElementById('teacher-modal');
+  m.classList.remove('hidden');
+  m.classList.add('flex');
+}
+
+function closeTeacherModal() {
+  playTone('click');
+  const m = document.getElementById('teacher-modal');
+  m.classList.add('hidden');
+  m.classList.remove('flex');
+}
+
+function switchTeacherTab(tabName) {
+  ['rekap', 'kunci', 'dokumen', 'panduan'].forEach(t => {
+    document.getElementById(`teacher-tab-${t}`).classList.add('hidden');
+    const btn = document.getElementById(`tab-btn-${t}`);
+    btn.className = "px-4 py-2.5 rounded-xl font-extrabold text-sm sm:text-base bg-slate-200 text-slate-700";
+  });
+  document.getElementById(`teacher-tab-${tabName}`).classList.remove('hidden');
+  document.getElementById(`tab-btn-${tabName}`).className = "px-4 py-2.5 rounded-xl font-extrabold text-sm sm:text-base bg-indigo-600 text-white";
+}
+
+function renderRekapTable() {
+  const tbody = document.getElementById('rekap-table-body');
+  const records = getSavedRecords();
+  if (records.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-500">Belum ada data hasil pengerjaan kuis pada perangkat ini.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = records.map((r, i) => `
+    <tr class="hover:bg-slate-50">
+      <td class="p-3">${i + 1}</td>
+      <td class="p-3 font-extrabold text-slate-900">${r.name}</td>
+      <td class="p-3 text-xs">${r.mode}</td>
+      <td class="p-3 text-center text-emerald-700 font-extrabold">${r.correct}</td>
+      <td class="p-3 text-center text-amber-700 font-extrabold">${r.wrong}</td>
+      <td class="p-3 text-center"><span class="bg-indigo-100 text-indigo-800 px-2.5 py-1 rounded-lg font-extrabold">${r.score}</span></td>
+      <td class="p-3 text-xs">${r.note}</td>
+      <td class="p-3 text-xs text-slate-500">${r.date}</td>
+    </tr>
+  `).join('');
+}
+
+function renderAnswerKeyList() {
+  const container = document.getElementById('answer-key-container');
+  const letters = ['A', 'B', 'C', 'D'];
+  const groups = [
+    { m: 1, title: "MATERI 1: QS. AL-KAFIRUN (SOAL 1 - 10)" },
+    { m: 2, title: "MATERI 2: HADIS TENTANG MENGHORMATI PERBEDAAN (SOAL 11 - 20)" },
+    { m: 3, title: "MATERI 3: CONTOH SEDERHANA IMAN KEPADA QADA DAN QADAR (SOAL 21 - 30)" },
+    { m: 4, title: "MATERI 4: PERILAKU PEDULI LINGKUNGAN SEKOLAH (SOAL 31 - 40)" }
+  ];
+
+  container.innerHTML = groups.map(g => {
+    const items = QUIZ_DATA.filter(q => q.materi === g.m);
+    return `
+      <div class="border-2 border-slate-200 rounded-2xl overflow-hidden">
+        <div class="bg-indigo-50 px-4 py-2.5 font-extrabold text-indigo-900 border-b-2 border-slate-200">${g.title}</div>
+        <div class="divide-y divide-slate-200 text-sm">
+          ${items.map(q => `
+            <div class="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <span class="font-extrabold text-indigo-700">No. ${q.id}.</span> 
+                <span class="font-bold text-slate-800">${q.question}</span>
+              </div>
+              <div class="bg-emerald-100 text-emerald-900 px-3 py-1 rounded-lg font-extrabold whitespace-nowrap self-start">
+                Kunci: ${letters[q.answer]} (${q.options[q.answer].label})
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function clearHistoryPrompt() {
+  document.getElementById('reset-confirm-box').classList.remove('hidden');
+}
+function cancelClearHistory() {
+  document.getElementById('reset-confirm-box').classList.add('hidden');
+}
+function confirmClearHistory() {
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById('reset-confirm-box').classList.add('hidden');
+  renderRekapTable();
+}
+
+function downloadCSV() {
+  const records = getSavedRecords();
+  let csv = "No,Nama Siswa,Materi,Benar,Salah,Total Soal,Nilai Akhir,Catatan Kemampuan,Waktu\n";
+  records.forEach((r, i) => {
+    csv += `${i+1},"${r.name}","${r.mode}",${r.correct},${r.wrong},${r.total},${r.score},"${r.note}","${r.date}"\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'Rekap_Nilai_PAI_SLB_Fase_C.csv';
+  link.click();
+}
+
+/**
+ * ============================================================================
+ * 9. GENERATOR DOKUMEN LENGKAP MICROSOFT WORD (.DOC) & GOOGLE DOCS
+ * Memuat 10 komponen perangkat ajar & bank 40 soal siap edit di Word/Docs.
+ * ============================================================================
+ */
+function generateCompleteDocumentHTML() {
+  const letters = ['A', 'B', 'C', 'D'];
+  const soalRows = QUIZ_DATA.map(q => `
+    <div style="margin-bottom: 14px; page-break-inside: avoid;">
+      <p style="margin: 0 0 4px 0;"><strong>${q.id}. ${q.question}</strong> <em>[${q.materiTitle}]</em></p>
+      <table style="width:100%; border-collapse: collapse; margin-left: 16px;">
+        <tr>
+          <td style="width:50%; padding:2px;">A. [Gambar] ${q.options[0].label}</td>
+          <td style="width:50%; padding:2px;">C. [Gambar] ${q.options[2].label}</td>
+        </tr>
+        <tr>
+          <td style="width:50%; padding:2px;">B. [Gambar] ${q.options[1].label}</td>
+          <td style="width:50%; padding:2px;">D. [Gambar] ${q.options[3].label}</td>
+        </tr>
+      </table>
+    </div>
+  `).join('');
+
+  const kunciRows = QUIZ_DATA.map(q => `
+    <tr>
+      <td style="border:1px solid #000; padding:4px; text-align:center;">${q.id}</td>
+      <td style="border:1px solid #000; padding:4px;">${q.materiTitle}</td>
+      <td style="border:1px solid #000; padding:4px; text-align:center;"><strong>${letters[q.answer]}</strong></td>
+      <td style="border:1px solid #000; padding:4px;">${q.options[q.answer].label}</td>
+    </tr>
+  `).join('');
+
+  return `
+    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+    <head><meta charset='utf-8'><title>Perangkat Kuis Interaktif PAI SLB Fase C</title></head>
+    <body style="font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.45;">
+      <h1 style="text-align:center; font-size:15pt; margin-bottom:4px;">PERANGKAT PEMBELAJARAN & ASESMEN INTERAKTIF</h1>
+      <h2 style="text-align:center; font-size:13pt; margin-top:0;">PENDIDIKAN AGAMA ISLAM DAN BUDI PEKERTI — SLB FASE C</h2>
+      <hr/>
+
+      <h3>1. JUDUL KEGIATAN PEMBELAJARAN</h3>
+      <p>Kuis Interaktif Berbasis Visual dan Audio: <em>"Belajar Sambil Bermain PAI dan Budi Pekerti"</em> bagi Peserta Didik Berkebutuhan Khusus (Fase C).</p>
+
+      <h3>2. IDENTITAS MATERI</h3>
+      <table style="width:100%; border-collapse: collapse;">
+        <tr><td style="width:30%; padding:4px;"><strong>Satuan Pendidikan</strong></td><td>: Sekolah Luar Biasa (SLB)</td></tr>
+        <tr><td style="padding:4px;"><strong>Mata Pelajaran</strong></td><td>: Pendidikan Agama Islam dan Budi Pekerti</td></tr>
+        <tr><td style="padding:4px;"><strong>Fase / Kelas</strong></td><td>: Fase C (Setara Kelas V–VI SD)</td></tr>
+        <tr><td style="padding:4px;"><strong>Materi Pokok</strong></td><td>: (1) QS. Al-Kafirun, (2) Hadis Menghormati Perbedaan, (3) Iman kepada Qada dan Qadar, (4) Peduli Lingkungan Sekolah</td></tr>
+        <tr><td style="padding:4px;"><strong>Jumlah Soal</strong></td><td>: 40 Soal Pilihan Ganda Bergambar (4 Materi × 10 Soal)</td></tr>
+      </table>
+
+      <h3>3. TUJUAN PEMBELAJARAN</h3>
+      <ol>
+        <li>Peserta didik mampu mengenal identitas dasar QS. Al-Kafirun (6 ayat) dan menunjukkan sikap menghormati teman yang berbeda agama melalui pilihan gambar konkret.</li>
+        <li>Peserta didik mampu meneladani hadis tentang menyayangi saudara dan menghormati perbedaan dengan memilih perilaku tolong-menolong, berbagi, dan tidak mengejek teman.</li>
+        <li>Peserta didik mampu mengenali contoh sederhana iman kepada Qada dan Qadar dalam keseharian seperti berdoa, rajin belajar, bersabar saat gagal, dan bersyukur.</li>
+        <li>Peserta didik mampu mengidentifikasi perilaku peduli kebersihan dan kelestarian lingkungan sekolah.</li>
+      </ol>
+
+      <h3>4. KISI-KISI 40 SOAL</h3>
+      <table style="width:100%; border-collapse: collapse; border:1px solid #000;">
+        <tr style="background:#E2E8F0;">
+          <th style="border:1px solid #000; padding:6px;">No</th>
+          <th style="border:1px solid #000; padding:6px;">Materi Pokok</th>
+          <th style="border:1px solid #000; padding:6px;">Indikator Pencapaian Visual/Audio</th>
+          <th style="border:1px solid #000; padding:6px;">Nomor Soal</th>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px; text-align:center;">1</td>
+          <td style="border:1px solid #000; padding:6px;">QS. Al-Kafirun</td>
+          <td style="border:1px solid #000; padding:6px;">Mengenal jumlah 6 ayat, ibadah umat Islam, menghormati teman berbeda agama, tidak memaksa agama, dan hidup rukun.</td>
+          <td style="border:1px solid #000; padding:6px; text-align:center;">1 – 10</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px; text-align:center;">2</td>
+          <td style="border:1px solid #000; padding:6px;">Hadis Menghormati Perbedaan</td>
+          <td style="border:1px solid #000; padding:6px;">Menyayangi saudara (HR. Bukhari & Muslim), berbagi bekal, menolong teman disabilitas/jatuh, mendengarkan pendapat, dan tidak mengejek.</td>
+          <td style="border:1px solid #000; padding:6px; text-align:center;">11 – 20</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px; text-align:center;">3</td>
+          <td style="border:1px solid #000; padding:6px;">Iman kepada Qada dan Qadar</td>
+          <td style="border:1px solid #000; padding:6px;">Berdoa sebelum belajar, berusaha rajin belajar, bersyukur mendapat hadiah/nilai, serta bersabar dan bangkit saat belum berhasil.</td>
+          <td style="border:1px solid #000; padding:6px; text-align:center;">21 – 30</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px; text-align:center;">4</td>
+          <td style="border:1px solid #000; padding:6px;">Perilaku Peduli Lingkungan Sekolah</td>
+          <td style="border:1px solid #000; padding:6px;">Membuang sampah pada tempatnya, menyapu lantai, merapikan meja kursi, menyiram tanaman, menjaga toilet, dan piket kelas.</td>
+          <td style="border:1px solid #000; padding:6px; text-align:center;">31 – 40</td>
+        </tr>
+      </table>
+
+      <h3>5 & 6. NASKAH LENGKAP 40 SOAL DAN PILIHAN JAWABAN (A–D)</h3>
+      ${soalRows}
+
+      <h3>7. KUNCI JAWABAN 40 SOAL</h3>
+      <table style="width:100%; border-collapse: collapse; border:1px solid #000;">
+        <tr style="background:#E2E8F0;">
+          <th style="border:1px solid #000; padding:5px;">No</th>
+          <th style="border:1px solid #000; padding:5px;">Materi</th>
+          <th style="border:1px solid #000; padding:5px;">Kunci</th>
+          <th style="border:1px solid #000; padding:5px;">Keterangan Gambar Benar</th>
+        </tr>
+        ${kunciRows}
+      </table>
+
+      <h3>8 & 9. INDIKATOR PENILAIAN & PEDOMAN PENSKORAN</h3>
+      <ul>
+        <li><strong>Skor Setiap Soal:</strong> Jawaban benar pada percobaan pertama = 1 poin; Belum tepat = 0 poin (peserta didik tetap diberi penguatan positif untuk mencoba kembali).</li>
+        <li><strong>Rumus Nilai Akhir:</strong> <code>(Jumlah Jawaban Benar ÷ Jumlah Total Soal) × 100</code>.</li>
+        <li><strong>Kriteria Capaian SLB Fase C:</strong>
+          <ul>
+            <li><strong>85 – 100 (Sangat Baik):</strong> Peserta didik mampu mengidentifikasi perilaku terpuji secara mandiri melalui bantuan visual dan audio.</li>
+            <li><strong>65 – 84 (Baik):</strong> Peserta didik mampu memilih jawaban benar dengan sedikit pengulangan instruksi audio.</li>
+            <li><strong>&lt; 65 (Perlu Pendampingan):</strong> Peserta didik membutuhkan bimbingan konkret individual dan pengulangan materi berbasis gambar sehari-hari.</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>10. LEMBAR REKAP NILAI PESERTA DIDIK</h3>
+      <table style="width:100%; border-collapse: collapse; border:1px solid #000;">
+        <tr style="background:#E2E8F0;">
+          <th style="border:1px solid #000; padding:6px;">No</th>
+          <th style="border:1px solid #000; padding:6px;">Nama Peserta Didik</th>
+          <th style="border:1px solid #000; padding:6px;">Benar</th>
+          <th style="border:1px solid #000; padding:6px;">Salah</th>
+          <th style="border:1px solid #000; padding:6px;">Nilai</th>
+          <th style="border:1px solid #000; padding:6px;">Catatan Perkembangan Siswa</th>
+        </tr>
+        <tr><td style="border:1px solid #000; padding:10px;">1</td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td></tr>
+        <tr><td style="border:1px solid #000; padding:10px;">2</td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td></tr>
+        <tr><td style="border:1px solid #000; padding:10px;">3</td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td></tr>
+        <tr><td style="border:1px solid #000; padding:10px;">4</td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td></tr>
+        <tr><td style="border:1px solid #000; padding:10px;">5</td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td></tr>
+      </table>
+    </body>
+    </html>
+  `;
+}
+
+function downloadWordDoc() {
+  const htmlContent = generateCompleteDocumentHTML();
+  const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'Perangkat_Kuis_PAI_SLB_Fase_C.doc';
+  link.click();
+}
+
+function copyForGoogleDocs() {
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = generateCompleteDocumentHTML();
+  tempDiv.style.position = 'fixed';
+  tempDiv.style.left = '-9999px';
+  document.body.appendChild(tempDiv);
+
+  const range = document.createRange();
+  range.selectNodeContents(tempDiv);
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+  try {
+    document.execCommand('copy');
+    document.getElementById('copy-toast').classList.remove('hidden');
+  } catch (e) {}
+  selection.removeAllRanges();
+  tempDiv.remove();
+}
+
+// Inisialisasi aplikasi saat halaman dimuat
+window.onload = function() {
+  renderApp();
+};
+</script>
+</body>
+</html>
